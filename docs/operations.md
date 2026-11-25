@@ -1,6 +1,12 @@
 # 運用メモ（MVP）
 
-## デプロイ（未実施・手順案）
+## ステージング
+
+- URL: https://mcp-quest-game.wagaya.workers.dev （MCP: `/mcp`、世界 `WORLD_INSTANCE=dev`）
+- 2026-11-25 デプロイ。`scripts/smoke.ts` による E2E は成功。実クライアントでの検証は未実施。
+- `ADMIN_TOKEN` は Worker の Secret として設定済み（リポジトリには含めない）。
+
+## デプロイ手順
 
 1. KV ネームスペースを作成し、`apps/game/wrangler.jsonc` の `OAUTH_KV` の id を置き換える。
    `npx wrangler kv namespace create OAUTH_KV`

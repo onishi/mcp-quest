@@ -12,7 +12,7 @@
 
 - 実際の Claude / ChatGPT からの接続（公開 URL へのデプロイが必要）。書き込みツールの確認ダイアログ頻度も未計測。
 - 人間によるプレイテスト（30 分で楽しめるか）。
-- Cloudflare 本番環境へのデプロイ（KV id はプレースホルダ）。
+- 本番環境（`--env production`）へのデプロイ（KV id はプレースホルダ）。ステージングは https://mcp-quest-game.wagaya.workers.dev にデプロイ済みで、smoke は成功。
 - Google OIDC、エッジのレート制限・WAF、Cron（M16）。
 
 ## 次の作業候補（優先順）

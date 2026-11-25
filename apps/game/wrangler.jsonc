@@ -14,7 +14,7 @@
     "bindings": [{ "name": "WORLD", "class_name": "WorldDO" }]
   },
   "migrations": [{ "tag": "v1", "new_sqlite_classes": ["WorldDO"] }],
-  "kv_namespaces": [{ "binding": "OAUTH_KV", "id": "REPLACE_WITH_KV_NAMESPACE_ID" }],
+  "kv_namespaces": [{ "binding": "OAUTH_KV", "id": "55e09c9e3b5248caa5f53de62c223669" }],
   "env": {
     "production": {
       "name": "mcp-quest-game-production",
