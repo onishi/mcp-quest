@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Typecheck
+        run: npm run typecheck
+      - name: LLM-Free Runtime guard (R-LLM-01..03)
+        run: npm run check:llm-free
+      - name: Compile scenarios
+        run: npm run check:scenarios
+      - name: Tests (unit, security, simulation)
+        run: npm test
