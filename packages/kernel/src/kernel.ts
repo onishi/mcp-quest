@@ -1249,7 +1249,9 @@ export class Kernel {
         const itemId = params.item_id;
         if (!itemId || !c.items[itemId]) throw new GameError("INVALID_ACTION", "その道具を持っていない。");
         const item = this.items.get(itemId);
-        const trig = triggers.find((t) => t.action === "use_item" && t.item === itemId && (!t.target || t.target === params.target_id));
+        const trig =
+          triggers.find((t) => t.action === "use_item" && t.item === itemId && t.target !== undefined && t.target === params.target_id) ??
+          triggers.find((t) => t.action === "use_item" && t.item === itemId && !t.target);
         if (trig) runTrigger(trig);
         else if (item?.kind === "consumable" && item.heal) {
           const before = c.hp;

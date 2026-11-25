@@ -1,0 +1,133 @@
+{
+  "id": "missing_herbalist",
+  "version": 1,
+  "schemaVersion": 1,
+  "title": "消えた薬草採り",
+  "kind": "exploration",
+  "difficulty": 2,
+  "targetTurns": 12,
+  "maxTurns": 22,
+  "region": "riefen",
+  "hook": "薬屋の扉を開けると、薬師エレナが青ざめた顔で振り向いた。「トビが……昨日、月光草を採りに森へ行ったきり戻らないんです。夜になれば森は狼の縄張りになる。どうか、あの子を探してください」",
+  "publicSummary": "精霊の森で行方不明になった少年トビを探す。森の探索・救助・謎解き。",
+  "gmNotes": "時間の経過（夜の訪れ）が緊張を生む。鬼火を追うと迷う。エルフの狩人、灯り、手がかりのいずれでも正しい道を見つけられる。",
+  "tags": ["exploration", "rescue", "beginner"],
+  "uniqueness": "unique_per_character",
+  "dependencies": [
+    { "entity": "npc_tobi", "predicate": "alive" },
+    { "entity": "npc_elena", "predicate": "alive" }
+  ],
+  "objectives": [
+    { "id": "o_path", "text": "トビの行き先を突き止める", "required": false, "doneWhen": { "flag": "found_true_path" } },
+    { "id": "o_rescue", "text": "トビを村へ連れ帰る", "required": true, "doneWhen": { "flag": "tobi_rescued" } }
+  ],
+  "initialNode": "apothecary",
+  "nodes": [
+    {
+      "id": "apothecary", "name": "薬屋", "location": "loc_apothecary",
+      "description": "乾いた薬草の匂い。カウンターの奥でエレナが落ち着かない様子で指を組んでいる。棚の陰から、娘のリラが心配そうに顔を出した。",
+      "targets": [
+        { "id": "elena", "name": "薬師エレナ", "kind": "npc", "entity": "npc_elena", "description": "物静かな薬師。目の下に濃い隈がある。" },
+        { "id": "lila", "name": "リラ", "kind": "npc", "entity": "npc_lila", "description": "病弱だが好奇心旺盛な少女。トビとは仲がいい。" },
+        { "id": "herb_chart", "name": "薬草の採集図", "kind": "object", "description": "森のどこで何が採れるかを書き込んだ手描きの図。" }
+      ],
+      "exits": [{ "to": "forest_edge", "label": "精霊の森へ向かう" }]
+    },
+    {
+      "id": "forest_edge", "name": "森の入口", "location": "loc_spirit_forest",
+      "description": "苔むした古木が門のように並ぶ森の入口。小道は二股に分かれ、片方には子どもの足跡が残っている。木の上から誰かがこちらを見ている気配がする。",
+      "targets": [
+        { "id": "footprints", "name": "小さな足跡", "kind": "feature", "description": "子どもの靴跡。ぬかるみに点々と続いている。" },
+        { "id": "selphine", "name": "エルフの狩人", "kind": "npc", "entity": "npc_selphine", "description": "弓を手にした長身のエルフ。人間を値踏みするような目をしている。" },
+        { "id": "thicket", "name": "茂み", "kind": "feature", "description": "踏み荒らされた茂み。何かが引っかかっている。" }
+      ],
+      "exits": [
+        { "to": "deep_forest", "label": "森の奥へ進む" },
+        { "to": "apothecary", "label": "村へ戻る" }
+      ]
+    },
+    {
+      "id": "deep_forest", "name": "森の奥", "location": "loc_spirit_forest",
+      "description": "木々が空を覆い、昼なお薄暗い。木立の間を青白い光がいくつも漂い、手招きするように揺れている。",
+      "targets": [
+        { "id": "wisp_lights", "name": "青白い光", "kind": "feature", "description": "ふわふわと漂う光。近づくと少し遠ざかる。" },
+        { "id": "old_trail", "name": "苔に埋もれた小道", "kind": "feature", "description": "獣道とも人の道ともつかない細い跡。" }
+      ],
+      "exits": [
+        { "to": "spirit_spring", "label": "正しい道を辿って泉へ向かう", "requires": { "flag": "found_true_path" }, "lockedText": "どちらへ進めばいいのか分からない。光に惑わされず、正しい道を見つける必要がある。" },
+        { "to": "forest_edge", "label": "森の入口へ戻る" }
+      ]
+    },
+    {
+      "id": "spirit_spring", "name": "精霊の泉", "location": "loc_spirit_forest",
+      "description": "木々が開け、澄んだ泉が月光草の淡い光に縁取られている。泉のほとりの岩陰に、足を押さえてうずくまる少年がいた。藪の向こうで、低い唸り声がする。",
+      "onEnter": [{ "op": "advance_clock", "id": "night", "amount": 1 }],
+      "targets": [
+        { "id": "tobi", "name": "トビ", "kind": "npc", "entity": "npc_tobi", "description": "泥だらけの少年。足首が腫れている。" },
+        { "id": "moonleaf_patch", "name": "月光草の群生", "kind": "object", "description": "淡く光る薬草が一面に生えている。" },
+        { "id": "wolves", "name": "藪の中の狼", "kind": "feature", "description": "二対の目が闇の中で光っている。", "visibleWhen": { "not": { "any": [{ "flag": "wolves_gone" }, { "combat": true }, { "all": [{ "defeated": "wolf_a" }, { "defeated": "wolf_b" }] }] } } }
+      ],
+      "exits": [{ "to": "deep_forest", "label": "森の奥へ戻る" }]
+    }
+  ],
+  "clues": [
+    { "id": "c_moonleaf_route", "text": "月光草は森の奥、精霊の泉のほとりにしか生えない。トビはきっとそこを目指した。" },
+    { "id": "c_lila_secret", "text": "リラによれば、トビは『泉の近くには迷わせる光が出るから、光じゃなくて苔の道を辿るんだ』と話していた。" },
+    { "id": "c_satchel", "text": "茂みに引っかかっていたのはトビの採集袋だ。袋から零れた薬草が、森の奥へ点々と続いている。" },
+    { "id": "c_wisp_trick", "text": "青白い光は迷いの鬼火だ。追えば追うほど森の奥で迷うことになる。" },
+    { "id": "c_selphine_path", "text": "エルフの狩人は、苔の小道が泉へ続く本当の道だと教えてくれた。", "fact": "fact_spirit_grove" }
+  ],
+  "clocks": [
+    {
+      "id": "night", "name": "夜の訪れ", "max": 5,
+      "onFull": [
+        { "op": "set_flag", "id": "nightfall" },
+        { "op": "narrate", "text": "日が落ちた。森のあちこちで狼の遠吠えが響く。" }
+      ]
+    }
+  ],
+  "enemies": [
+    { "id": "wolf_a", "name": "森狼", "monster": "wolf" },
+    { "id": "wolf_b", "name": "森狼", "monster": "wolf" }
+  ],
+  "triggers": [
+    { "id": "t_elena", "action": "talk", "target": "elena", "once": true, "text": "「月光草は森の奥、精霊の泉のほとりにしか生えないの。あの子、私の役に立とうとして……」エレナは唇を噛んだ。「これを。傷薬よ」", "effects": [{ "op": "reveal_clue", "id": "c_moonleaf_route" }, { "op": "give_item", "item": "potion_minor", "qty": 1 }] },
+    { "id": "t_elena_again", "action": "talk", "target": "elena", "when": { "clue": "c_moonleaf_route" }, "text": "「お願い。夜になる前に」" },
+    { "id": "t_elena_press", "action": "talk", "target": "elena", "approach": "intimidate", "once": true, "text": "エレナは怯えたように後ずさった。「な、何を疑っているの？　私はただトビを……」奥の部屋の扉に一瞬だけ視線が走った。", "effects": [{ "op": "relation", "npc": "npc_elena", "delta": -10 }, { "op": "set_flag", "id": "elena_nervous" }] },
+    { "id": "t_lila", "action": "talk", "target": "lila", "once": true, "check": { "skill": "persuasion", "difficulty": 9 }, "onSuccess": [{ "op": "reveal_clue", "id": "c_lila_secret" }], "successText": "リラは母親の顔をうかがってから、小声で教えてくれた。「トビね、光じゃなくて苔の道を辿るんだって言ってた。光は人を迷わせるんだって」", "onFailure": [{ "op": "narrate", "text": "リラは母親の後ろに隠れてしまった。" }], "failureText": "リラは恥ずかしがって何も言わない。" },
+    { "id": "t_chart", "action": "investigate", "target": "herb_chart", "check": { "skill": "lore", "difficulty": 10 }, "once": true, "onSuccess": [{ "op": "reveal_clue", "id": "c_moonleaf_route" }, { "op": "reveal_clue", "id": "c_wisp_trick" }], "successText": "採集図の端に、エレナの字で小さく書き込みがある。『泉への道：鬼火に注意。苔の道を行くこと』", "onFailure": [{ "op": "reveal_clue", "id": "c_moonleaf_route" }], "failureText": "書き込みが多すぎて読み取れたのは、月光草が泉のそばに生えることだけだった。" },
+    { "id": "t_footprints", "action": "investigate", "target": "footprints", "once": true, "text": "足跡は森の奥へ続いている。半日ほど前のものだ。", "effects": [{ "op": "advance_clock", "id": "night", "amount": 1 }] },
+    { "id": "t_thicket", "action": "investigate", "target": "thicket", "once": true, "check": { "skill": "perception", "difficulty": 10 }, "onSuccess": [{ "op": "reveal_clue", "id": "c_satchel" }, { "op": "give_item", "item": "tobis_satchel", "qty": 1 }], "successText": "茂みの奥に小さな採集袋が引っかかっていた。", "onFailure": [{ "op": "advance_clock", "id": "night", "amount": 1 }], "failureText": "茂みを探るうちに時間ばかりが過ぎていく。" },
+    { "id": "t_selphine_friendly", "action": "talk", "target": "selphine", "approach": "friendly", "once": true, "check": { "skill": "persuasion", "difficulty": 12 }, "onSuccess": [{ "op": "reveal_clue", "id": "c_selphine_path" }, { "op": "set_flag", "id": "found_true_path" }, { "op": "relation", "npc": "npc_selphine", "delta": 5 }], "successText": "セルフィーネは弓を下ろした。「……子どもか。苔の小道を行け。光は追うな。あれは森の悪戯だ」", "onFailure": [{ "op": "advance_clock", "id": "night", "amount": 1 }], "failureText": "「人間の子守りは私の役目ではない」エルフは木々の間に姿を消した。" },
+    { "id": "t_selphine_satchel", "action": "use_item", "item": "tobis_satchel", "target": "selphine", "once": true, "text": "採集袋を見せると、セルフィーネの表情がわずかに和らいだ。「月光草を摘む子か。泉へは苔の小道を行け。光は追うな」", "effects": [{ "op": "reveal_clue", "id": "c_selphine_path" }, { "op": "set_flag", "id": "found_true_path" }] },
+    { "id": "t_wisp_look", "action": "investigate", "target": "wisp_lights", "once": true, "check": { "skill": "arcana", "difficulty": 11 }, "onSuccess": [{ "op": "reveal_clue", "id": "c_wisp_trick" }], "successText": "光の揺らぎには規則性がある。迷いの鬼火だ。追ってはいけない。", "onFailure": [{ "op": "advance_clock", "id": "night", "amount": 1 }], "failureText": "見つめているうちに、どの光が近いのか分からなくなってきた。" },
+    { "id": "t_follow_wisps", "action": "interact", "target": "wisp_lights", "option": "follow_lights", "label": "光を追いかける", "text": "光を追って木々の間を進む……気がつくと、同じ倒木の前に戻っていた。", "effects": [{ "op": "advance_clock", "id": "night", "amount": 2 }, { "op": "damage", "amount": "1d3" }] },
+    { "id": "t_trail_known", "action": "investigate", "target": "old_trail", "when": { "any": [{ "clue": "c_lila_secret" }, { "clue": "c_wisp_trick" }, { "clue": "c_satchel" }, { "flag": "light" }] }, "once": true, "text": "知っていることを頼りに目を凝らすと、苔の小道の上に零れた薬草の葉が点々と落ちているのが見えた。これがトビの辿った道だ。", "effects": [{ "op": "set_flag", "id": "found_true_path" }] },
+    { "id": "t_trail_guess", "action": "investigate", "target": "old_trail", "when": { "not": { "any": [{ "clue": "c_lila_secret" }, { "clue": "c_wisp_trick" }, { "clue": "c_satchel" }, { "flag": "light" }] } }, "check": { "skill": "perception", "difficulty": 14 }, "onSuccess": [{ "op": "set_flag", "id": "found_true_path" }], "successText": "苔の上に、小さな靴跡がかすかに残っている。", "onFailure": [{ "op": "advance_clock", "id": "night", "amount": 1 }], "failureText": "暗くて道の続きが見分けられない。手がかりか灯りがあれば……" },
+    { "id": "t_tobi_talk", "action": "talk", "target": "tobi", "once": true, "text": "「ぼ、冒険者さん！？　足をくじいちゃって……狼がずっとあそこに……」トビは涙ぐみながら藪を指した。", "effects": [{ "op": "set_flag", "id": "tobi_found" }] },
+    { "id": "t_tobi_potion", "action": "use_item", "item": "potion_minor", "target": "tobi", "once": true, "text": "傷薬を塗ってやると、腫れが目に見えて引いていく。トビはおそるおそる立ち上がった。", "effects": [{ "op": "take_item", "item": "potion_minor", "qty": 1 }, { "op": "set_flag", "id": "tobi_treated" }, { "op": "relation", "npc": "npc_tobi", "delta": 10 }] },
+    { "id": "t_tobi_treat", "action": "interact", "target": "tobi", "option": "treat_ankle", "label": "足首を手当てする", "when": { "not": { "flag": "tobi_treated" } }, "check": { "skill": "medicine", "difficulty": 11 }, "onSuccess": [{ "op": "set_flag", "id": "tobi_treated" }], "successText": "添え木を当てて布できつく巻くと、トビはなんとか立てるようになった。", "onFailure": [{ "op": "advance_clock", "id": "night", "amount": 1 }], "failureText": "うまく固定できない。トビが痛みに顔をしかめる。" },
+    { "id": "t_tobi_carry", "action": "interact", "target": "tobi", "option": "carry_tobi", "label": "トビを背負う", "when": { "not": { "flag": "tobi_carried" } }, "check": { "skill": "athletics", "difficulty": 11 }, "onSuccess": [{ "op": "set_flag", "id": "tobi_carried" }], "successText": "トビを背負い上げた。軽い。これなら歩ける。", "onFailure": [{ "op": "damage", "amount": "1d2" }], "failureText": "足を滑らせて膝をついた。もう一度試すか、別の方法を探そう。" },
+    { "id": "t_wolves_scare", "action": "interact", "target": "wolves", "option": "scare_wolves", "label": "大声と松明で狼を追い払う", "check": { "skill": "intimidation", "difficulty": 12 }, "onSuccess": [{ "op": "set_flag", "id": "wolves_gone" }], "successText": "あなたの気迫に、狼たちは尾を巻いて闇へ消えた。", "onFailure": [{ "op": "start_combat", "enemies": ["wolf_a", "wolf_b"] }], "failureText": "狼たちは怯むどころか、牙を剥いて飛びかかってきた！" },
+    { "id": "t_wolves_torch", "action": "use_item", "item": "torch", "target": "wolves", "once": true, "text": "松明を振りかざすと、炎を嫌った狼たちは唸りながら後ずさり、やがて姿を消した。", "effects": [{ "op": "set_flag", "id": "wolves_gone" }] },
+    { "id": "t_wolves_food", "action": "use_item", "item": "rations", "target": "wolves", "once": true, "text": "干し肉を遠くへ投げると、狼たちはそちらへ駆けていった。", "effects": [{ "op": "take_item", "item": "rations", "qty": 1 }, { "op": "set_flag", "id": "wolves_gone" }] },
+    { "id": "t_wolves_fight", "action": "interact", "target": "wolves", "option": "fight_wolves", "label": "狼に斬りかかる", "text": "あなたは藪へ踏み込んだ。二頭の狼が躍りかかってくる！", "effects": [{ "op": "start_combat", "enemies": ["wolf_a", "wolf_b"] }] },
+    { "id": "t_moonleaf", "action": "interact", "target": "moonleaf_patch", "option": "gather_moonleaf", "label": "月光草を摘む", "once": true, "text": "淡く光る月光草を、根を傷めないように摘み取った。", "effects": [{ "op": "give_item", "item": "herb_moonleaf", "qty": 2 }, { "op": "set_flag", "id": "moonleaf_gathered" }, { "op": "advance_clock", "id": "night", "amount": 1 }] },
+    { "id": "t_lead_out", "action": "interact", "target": "tobi", "option": "lead_home", "label": "トビを連れて村へ帰る", "when": { "all": [{ "any": [{ "flag": "tobi_treated" }, { "flag": "tobi_carried" }] }, { "any": [{ "flag": "wolves_gone" }, { "all": [{ "defeated": "wolf_a" }, { "defeated": "wolf_b" }] }] }] }, "text": "トビを連れて、苔の小道を引き返す。森の入口が見えたとき、トビが小さく「ありがとう」と言った。", "effects": [{ "op": "set_flag", "id": "tobi_rescued" }] },
+    { "id": "t_lead_out_blocked", "action": "interact", "target": "tobi", "option": "lead_home_now", "label": "狼がいるまま、急いでトビを連れ出す", "when": { "all": [{ "any": [{ "flag": "tobi_treated" }, { "flag": "tobi_carried" }] }, { "not": { "any": [{ "flag": "wolves_gone" }, { "all": [{ "defeated": "wolf_a" }, { "defeated": "wolf_b" }] }] } }] }, "check": { "skill": "stealth", "difficulty": 13 }, "onSuccess": [{ "op": "set_flag", "id": "tobi_rescued" }, { "op": "set_flag", "id": "sneaked_out" }], "successText": "狼の注意が逸れた一瞬に、トビを連れて泉を離れた。", "onFailure": [{ "op": "start_combat", "enemies": ["wolf_a", "wolf_b"] }], "failureText": "枝を踏む音に狼が振り向いた。襲ってくる！" }
+  ],
+  "resolutions": [
+    { "id": "r_rescued_herbs", "when": { "all": [{ "flag": "tobi_rescued" }, { "flag": "moonleaf_gathered" }] }, "outcome": "success", "title": "月光草と少年", "epilogue": "トビを連れ帰ると、エレナは声を上げて泣き、少年を抱きしめた。あなたが摘んだ月光草を見て、彼女は何か言いかけ……ただ深く頭を下げた。その夜、薬屋の奥の部屋には遅くまで灯りがともっていた。", "rewards": { "xp": 60, "gold": 25, "items": [] }, "worldEffects": [{ "op": "set_fact", "fact": "fact_tobi_rescued" }, { "op": "set_fact", "fact": "fact_spirit_grove", "visibility": "private" }] },
+    { "id": "r_rescued", "when": { "flag": "tobi_rescued" }, "outcome": "success", "title": "森からの帰還", "epilogue": "トビを連れ帰ると、エレナは声を上げて泣き、少年を抱きしめた。村ではしばらく、森から子どもを連れ帰った冒険者の話で持ちきりになった。", "rewards": { "xp": 50, "gold": 25, "items": [] }, "worldEffects": [{ "op": "set_fact", "fact": "fact_tobi_rescued" }] },
+    { "id": "r_withdraw", "when": { "flag": "withdrawn" }, "outcome": "withdrawn", "title": "捜索の中断", "epilogue": "あなたは一度村へ引き返した。エレナは黙って頷いたが、その目は森の方を向いたままだった。", "rewards": { "xp": 5, "gold": 0, "items": [] } },
+    { "id": "r_timeout", "when": { "flag": "timeout" }, "outcome": "partial", "title": "夜明けの捜索隊", "epilogue": "夜通しの捜索は実を結ばなかった。夜明けとともに村の捜索隊が森へ入り、あなたの残した目印を頼りにトビを見つけ出したという。", "rewards": { "xp": 15, "gold": 0, "items": [] } },
+    { "id": "r_down", "when": { "flag": "down" }, "outcome": "failure", "title": "森の狩人", "epilogue": "意識が遠のく中、風を切る矢の音を聞いた。目を覚ますと宿屋の天井が見えた。エルフの狩人が、あなたとトビを森の入口まで運んでくれたらしい。", "rewards": { "xp": 10, "gold": 0, "items": [] } },
+    { "id": "r_dep_lost", "when": { "flag": "dependency_lost" }, "outcome": "partial", "title": "変わってしまった事情", "epilogue": "捜索の前提が変わり、依頼は取り下げられた。あなたの見た森の様子は、きっと誰かの役に立つ。", "rewards": { "xp": 15, "gold": 5, "items": [] } }
+  ],
+  "fallbackPolicy": [
+    { "when": "turn_limit", "mode": "conclude", "resolution": "r_timeout" },
+    { "when": "character_down", "mode": "conclude", "resolution": "r_down" },
+    { "when": "dependency_lost", "mode": "conclude", "resolution": "r_dep_lost", "followup": "daily_request" }
+  ],
+  "impactLimits": { "maxXp": 60, "maxGold": 25 }
+}

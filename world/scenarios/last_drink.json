@@ -1,0 +1,108 @@
+{
+  "id": "last_drink",
+  "version": 1,
+  "schemaVersion": 1,
+  "title": "最後の一杯",
+  "kind": "drama",
+  "difficulty": 1,
+  "targetTurns": 10,
+  "maxTurns": 20,
+  "region": "riefen",
+  "hook": "酒場「眠れる竜亭」の主人ゴルドは、毎晩、誰も座らない隅の席に一杯の酒を置く。三十年続く習慣だ。ところが近頃、朝になるとその酒が消えているという。「盗っ人なら構わん。だが……もし、あいつなら」ゴルドはそれ以上語らなかった。",
+  "publicSummary": "酒場の空席から毎晩消える酒の謎を追う、静かな人間ドラマ。",
+  "gmNotes": "戦闘はほぼない。ゴルドの後悔と、精霊が預かった約束がテーマ。精霊に敵意を向ければ失われるものがある。",
+  "tags": ["drama", "mystery", "beginner"],
+  "uniqueness": "unique_per_character",
+  "dependencies": [
+    { "entity": "npc_gord", "predicate": "alive" },
+    { "entity": "npc_old_spirit", "predicate": "alive" }
+  ],
+  "objectives": [
+    { "id": "o_who", "text": "酒を飲んでいるのは誰かを確かめる", "required": false, "doneWhen": { "flag": "spirit_seen" } },
+    { "id": "o_promise", "text": "空席に込められた想いに決着をつける", "required": true, "doneWhen": { "any": [{ "flag": "promise_delivered" }, { "flag": "farewell_postponed" }, { "flag": "will_search" }, { "defeated": "angry_wisp" }] } }
+  ],
+  "initialNode": "tavern_evening",
+  "nodes": [
+    {
+      "id": "tavern_evening", "name": "夕暮れの眠れる竜亭", "location": "loc_tavern",
+      "description": "暖炉の火がはぜ、常連客の笑い声が響く。カウンターの奥でゴルドが黙々と杯を磨いている。隅の席には、今夜も手つかずの酒が一杯置かれていた。",
+      "targets": [
+        { "id": "gord", "name": "主人ゴルド", "kind": "npc", "entity": "npc_gord", "description": "白髪交じりの大柄な男。左手の指が二本欠けている。" },
+        { "id": "empty_seat", "name": "隅の空席", "kind": "object", "description": "使い込まれた樫の椅子。座面だけが不思議と新しい。" },
+        { "id": "hilda", "name": "宿屋の女将ヒルダ", "kind": "npc", "entity": "npc_hilda", "description": "村一番の噂好き。今夜も常連客の輪の中心にいる。" }
+      ],
+      "exits": [
+        { "to": "tavern_night", "label": "店が閉まるまで待ち、隅の席を見張る" }
+      ]
+    },
+    {
+      "id": "tavern_night", "name": "深夜の眠れる竜亭", "location": "loc_tavern",
+      "description": "客が帰り、灯りが落とされた酒場。暖炉の熾火だけが赤く光る。隅の席の上に、ぼんやりとした淡い光が揺れている。",
+      "onEnter": [{ "op": "advance_clock", "id": "dawn", "amount": 1 }, { "op": "set_flag", "id": "spirit_seen" }],
+      "targets": [
+        { "id": "old_spirit", "name": "淡い光の人影", "kind": "npc", "entity": "npc_old_spirit", "description": "杯を両手で包むようにして座る、輪郭の曖昧な老人の姿。", "visibleWhen": { "not": { "any": [{ "combat": true }, { "defeated": "angry_wisp" }, { "flag": "dawn_came" }] } } },
+        { "id": "gord_night", "name": "ゴルド", "kind": "npc", "entity": "npc_gord", "description": "カウンターの陰で息を殺し、光の人影を見つめている。", "visibleWhen": { "flag": "gord_waiting" } },
+        { "id": "seat_night", "name": "隅の席", "kind": "object", "description": "杯の酒が、少しずつ減っていく。" },
+        { "id": "angry_wisp", "name": "怒れる鬼火", "kind": "enemy", "description": "燃え上がる青白い炎。" }
+      ],
+      "exits": [
+        { "to": "tavern_evening", "label": "灯りをつけてカウンターに戻る" }
+      ]
+    }
+  ],
+  "clues": [
+    { "id": "c_frost", "text": "空席の杯の縁には、唇の跡ではなく、うっすらと霜のようなものがついている。人の仕業ではなさそうだ。" },
+    { "id": "c_coin", "text": "椅子の脚の継ぎ目に、見慣れない紋章の古い銀貨が挟まっていた。" },
+    { "id": "c_hilda_rumor", "text": "ヒルダによれば、ゴルドには若い頃ハロルドという冒険者仲間がいた。三十年前、二人で精霊の森に入り、戻ったのはゴルドだけだったという。" },
+    { "id": "c_gord_guilt", "text": "ゴルドは、狼に襲われた夜にハロルドを置いて逃げたことを、三十年間悔やみ続けている。", "fact": "fact_spirit_promise" },
+    { "id": "c_spirit_message", "text": "淡い光の人影は森の精霊だった。ハロルドは死の間際に精霊へ言伝を託していた。『ゴルド、お前のせいじゃない。生きろ』と。" },
+    { "id": "c_coin_crest", "text": "銀貨の紋章は、丘の上の古代遺跡の扉に刻まれた紋章と同じものだ。ハロルドは遺跡で何かを見つけていたのかもしれない。", "fact": "fact_old_coin_crest" }
+  ],
+  "clocks": [
+    {
+      "id": "dawn", "name": "夜明け", "max": 6,
+      "onFull": [
+        { "op": "narrate", "text": "窓の外が白み始めた。淡い光の人影は、朝日に溶けるように消えていった。" },
+        { "op": "set_flag", "id": "dawn_came" }
+      ]
+    }
+  ],
+  "enemies": [{ "id": "angry_wisp", "name": "怒れる鬼火", "monster": "forest_wisp" }],
+  "triggers": [
+    { "id": "t_gord_first", "action": "talk", "target": "gord", "approach": "friendly", "once": true, "text": "「あの席か。……昔の仲間の席だ。それだけさ」ゴルドは杯を磨く手を止めない。", "effects": [{ "op": "set_flag", "id": "asked_gord" }] },
+    { "id": "t_gord_persuade", "action": "talk", "target": "gord", "approach": "persuade", "when": { "not": { "clue": "c_gord_guilt" } }, "check": { "skill": "insight", "difficulty": 12 }, "onSuccess": [{ "op": "reveal_clue", "id": "c_gord_guilt" }, { "op": "set_flag", "id": "gord_trusts" }, { "op": "relation", "npc": "npc_gord", "delta": 10 }], "successText": "ゴルドは長い沈黙のあと、欠けた指を見つめて言った。「……狼に囲まれた夜、俺はあいつを置いて逃げた。あいつは俺を逃がすために残ったんだ。三十年、毎晩あいつに詫びてる」", "onFailure": [{ "op": "relation", "npc": "npc_gord", "delta": -2 }], "failureText": "「詮索好きは嫌われるぞ」ゴルドは背を向けた。" },
+    { "id": "t_gord_rumor", "action": "talk", "target": "gord", "approach": "friendly", "when": { "all": [{ "clue": "c_hilda_rumor" }, { "not": { "clue": "c_gord_guilt" } }] }, "once": true, "check": { "skill": "insight", "difficulty": 9 }, "onSuccess": [{ "op": "reveal_clue", "id": "c_gord_guilt" }, { "op": "set_flag", "id": "gord_trusts" }, { "op": "relation", "npc": "npc_gord", "delta": 10 }], "successText": "ハロルドの名を出すと、ゴルドの手が止まった。「……ヒルダの奴め。そうだ。俺はあいつを森に置いて逃げた。あいつは俺を逃がすために残ったんだ」", "onFailure": [{ "op": "narrate", "text": "ゴルドは何も答えず、ただ杯を磨き続けた。" }], "failureText": "まだ心を開いてはくれない。" },
+    { "id": "t_gord_intimidate", "action": "talk", "target": "gord", "approach": "intimidate", "once": true, "text": "ゴルドは静かにあなたを見返した。「俺を脅してどうする。帰ってくれ」常連客たちの視線が冷たい。", "effects": [{ "op": "relation", "npc": "npc_gord", "delta": -10 }, { "op": "set_flag", "id": "gord_offended" }] },
+    { "id": "t_hilda", "action": "talk", "target": "hilda", "once": true, "text": "「あの席の話？　ふふ、知りたい？」ヒルダは声を潜めた。「ゴルドには若い頃ハロルドって相棒がいてね。三十年前、二人で森に入って、戻ったのはゴルドだけ。あの席はハロルドの席なのよ」", "effects": [{ "op": "reveal_clue", "id": "c_hilda_rumor" }] },
+    { "id": "t_seat_frost", "action": "investigate", "target": "empty_seat", "once": true, "check": { "skill": "perception", "difficulty": 10 }, "onSuccess": [{ "op": "reveal_clue", "id": "c_frost" }, { "op": "reveal_clue", "id": "c_coin" }, { "op": "give_item", "item": "old_silver_coin", "qty": 1 }], "successText": "杯の縁に霜がついている。さらに椅子の脚を調べると、継ぎ目に古い銀貨が挟まっていた。", "onFailure": [{ "op": "reveal_clue", "id": "c_frost" }], "failureText": "杯の縁に霜のようなものがついている。他には何も見つからない。" },
+    { "id": "t_coin_lore", "action": "use_item", "item": "old_silver_coin", "once": true, "check": { "skill": "lore", "difficulty": 12 }, "onSuccess": [{ "op": "reveal_clue", "id": "c_coin_crest" }], "successText": "銀貨の紋章に見覚えがある。丘の上の古代遺跡、その閉ざされた扉に刻まれていたものと同じだ。", "onFailure": [{ "op": "narrate", "text": "見たことのない紋章だ。誰か詳しい者に聞けば分かるかもしれない。" }], "failureText": "紋章の意味は分からなかった。" },
+    { "id": "t_gord_coin", "action": "use_item", "item": "old_silver_coin", "target": "gord", "once": true, "text": "銀貨を見せると、ゴルドは息を呑んだ。「ハロルドの……お守りだ。あいつはいつも、遺跡で拾ったこいつを持ち歩いてた」", "effects": [{ "op": "reveal_clue", "id": "c_coin_crest" }, { "op": "set_flag", "id": "gord_trusts" }, { "op": "relation", "npc": "npc_gord", "delta": 5 }] },
+    { "id": "t_ask_gord_wait", "action": "interact", "target": "gord", "option": "invite_gord", "label": "今夜、一緒に隅の席を見張ろうと誘う", "when": { "all": [{ "flag": "gord_trusts" }, { "not": { "flag": "gord_offended" } }] }, "once": true, "text": "ゴルドはしばらく黙っていたが、やがて前掛けを外した。「……いいだろう。三十年、見ないふりをしてきたんだ」", "effects": [{ "op": "set_flag", "id": "gord_waiting" }] },
+    { "id": "t_spirit_watch", "action": "investigate", "target": "seat_night", "text": "息を殺して見つめる。淡い光の人影は、杯の酒を惜しむように少しずつ口に運んでいる。", "effects": [{ "op": "advance_clock", "id": "dawn", "amount": 1 }] },
+    { "id": "t_spirit_talk", "action": "talk", "target": "old_spirit", "approach": "friendly", "when": { "not": { "clue": "c_spirit_message" } }, "check": { "skill": "insight", "difficulty": 11 }, "onSuccess": [{ "op": "reveal_clue", "id": "c_spirit_message" }, { "op": "relation", "npc": "npc_old_spirit", "delta": 10 }], "successText": "人影はゆっくりと顔を上げた。森の葉擦れのような声が響く。『ワタシハ……森ノモノ。アノ夜、死ニユク男ガ、言葉ヲ託シタ。ゴルド、オマエノセイジャナイ。生キロ、ト。ダガ、アノ男ハ……酒バカリ置イテ、ワタシヲ見ヨウトシナイ』", "onFailure": [{ "op": "advance_clock", "id": "dawn", "amount": 1 }], "failureText": "人影は怯えたように揺らぎ、何も答えない。驚かせないよう、もう少し静かに話しかけるべきかもしれない。" },
+    { "id": "t_spirit_persuade", "action": "talk", "target": "old_spirit", "approach": "persuade", "when": { "not": { "clue": "c_spirit_message" } }, "check": { "skill": "persuasion", "difficulty": 13 }, "onSuccess": [{ "op": "reveal_clue", "id": "c_spirit_message" }], "successText": "『……オマエニナラ、話ソウ』人影は、三十年前の夜に託された言葉を語った。『ゴルド、オマエノセイジャナイ。生キロ』", "onFailure": [{ "op": "advance_clock", "id": "dawn", "amount": 1 }], "failureText": "人影は首を振るように揺らいだ。" },
+    { "id": "t_spirit_threat", "action": "talk", "target": "old_spirit", "approach": "intimidate", "once": true, "text": "あなたの剣幕に、淡い光が激しく揺らぎ、青白い炎となって燃え上がった！", "effects": [{ "op": "start_combat", "enemies": ["angry_wisp"] }] },
+    { "id": "t_spirit_attack", "action": "interact", "target": "old_spirit", "option": "drive_out", "label": "得体の知れないものを追い払う", "text": "あなたが武器を構えると、淡い光は青白い炎となって燃え上がった！", "effects": [{ "op": "start_combat", "enemies": ["angry_wisp"] }] },
+    { "id": "t_deliver", "action": "interact", "target": "gord_night", "option": "bring_together", "label": "ゴルドを精霊の前に連れていく", "when": { "clue": "c_spirit_message" }, "once": true, "text": "ゴルドは震える足で隅の席に歩み寄った。『ゴルド……オマエノセイジャナイ。生キロ』精霊が告げると、大柄な男は子どものように声を上げて泣いた。やがて精霊は、空になった杯を残して、穏やかに消えていった。", "effects": [{ "op": "set_flag", "id": "promise_delivered" }, { "op": "relation", "npc": "npc_gord", "delta": 20 }] },
+    { "id": "t_relay", "action": "interact", "target": "old_spirit", "option": "relay_message", "label": "言伝を預かり、翌朝ゴルドに伝えると約束する", "when": { "all": [{ "clue": "c_spirit_message" }, { "not": { "flag": "gord_waiting" } }] }, "once": true, "check": { "skill": "persuasion", "difficulty": 10 }, "onSuccess": [{ "op": "set_flag", "id": "promise_delivered" }], "successText": "翌朝、あなたは精霊の言葉をゴルドに伝えた。ゴルドは長いあいだ黙っていたが、その夜から隅の席の酒は二杯になった。一杯は、彼自身のためのものだ。", "onFailure": [{ "op": "set_flag", "id": "farewell_postponed" }], "failureText": "翌朝、言葉を伝えたが、ゴルドは『そうか』とだけ言って背を向けた。届いたのかどうかは分からない。それでも、隅の席の酒は今夜も置かれるだろう。" },
+    { "id": "t_postpone", "action": "interact", "target": "old_spirit", "option": "postpone", "label": "まだ別れの時ではないと伝え、精霊にこのまま酒を飲みに来てくれるよう頼む", "when": { "clue": "c_spirit_message" }, "once": true, "text": "『……ワカッタ。アノ男ガ、ワタシヲ見ルマデ』精霊は杯を掲げるような仕草をした。答えはまだ先でいい。", "effects": [{ "op": "set_flag", "id": "farewell_postponed" }] },
+    { "id": "t_search", "action": "interact", "target": "gord", "option": "propose_search", "label": "ハロルドの足跡を一緒に探そうと提案する", "when": { "all": [{ "clue": "c_coin_crest" }, { "clue": "c_gord_guilt" }] }, "once": true, "text": "「遺跡か……あいつが最後に何を見つけたのか、確かめるべきなのかもしれんな」ゴルドは銀貨を握りしめ、初めて笑った。", "effects": [{ "op": "set_flag", "id": "will_search" }] }
+  ],
+  "resolutions": [
+    { "id": "r_delivered", "when": { "flag": "promise_delivered" }, "outcome": "success", "title": "三十年越しの言伝", "epilogue": "隅の席の酒が消えることは、もうなくなった。けれどゴルドは今も毎晩、二つの杯に酒を注ぐ。一つは友のために、一つは生き延びた自分のために。", "rewards": { "xp": 50, "gold": 20, "items": ["spirit_charm"] }, "worldEffects": [{ "op": "set_fact", "fact": "fact_spirit_promise_delivered" }] },
+    { "id": "r_search", "when": { "flag": "will_search" }, "outcome": "success", "title": "友の足跡", "epilogue": "ゴルドは古い銀貨を首から下げ、遺跡について調べ始めた。空席の謎はまだ解けていないが、三十年止まっていた男の時間が、ようやく動き出した。", "rewards": { "xp": 45, "gold": 15, "items": [] }, "worldEffects": [{ "op": "set_fact", "fact": "fact_gord_seeks_friend" }] },
+    { "id": "r_postponed", "when": { "flag": "farewell_postponed" }, "outcome": "partial", "title": "延ばされた別れ", "epilogue": "精霊は今夜も酒を飲みに来る。ゴルドがその姿を見る日が来るのかどうか、それはまだ誰にも分からない。", "rewards": { "xp": 35, "gold": 10, "items": [] } },
+    { "id": "r_banished", "when": { "defeated": "angry_wisp" }, "outcome": "partial", "title": "消えた光", "epilogue": "炎は散り、二度と現れなかった。翌晩から隅の席の酒が消えることはなくなったが、ゴルドは理由を知らないまま、今夜も一杯の酒を置く。森のどこかで、託された言葉が永遠に失われた。", "rewards": { "xp": 20, "gold": 5, "items": [] }, "worldEffects": [{ "op": "set_entity_status", "entity": "npc_old_spirit", "status": "departed" }] },
+    { "id": "r_dawn", "when": { "flag": "dawn_came" }, "outcome": "partial", "title": "夜明け", "epilogue": "朝日とともに精霊は消えた。謎の答えは、また次の夜に持ち越される。", "rewards": { "xp": 15, "gold": 0, "items": [] } },
+    { "id": "r_withdraw", "when": { "flag": "withdrawn" }, "outcome": "withdrawn", "title": "見届けずに", "epilogue": "あなたは酒場を後にした。隅の席の酒は、今夜も誰かのために置かれている。", "rewards": { "xp": 5, "gold": 0, "items": [] } },
+    { "id": "r_timeout", "when": { "flag": "timeout" }, "outcome": "partial", "title": "長い夜の終わり", "epilogue": "結論の出ないまま夜が明けた。ゴルドは何も聞かず、あなたに温かいスープを出してくれた。", "rewards": { "xp": 10, "gold": 0, "items": [] } },
+    { "id": "r_down", "when": { "flag": "down" }, "outcome": "failure", "title": "冷たい炎", "epilogue": "青白い炎に包まれて意識を失った。目を覚ますと、ゴルドが黙ってあなたの額に濡れた布を当てていた。", "rewards": { "xp": 5, "gold": 0, "items": [] } },
+    { "id": "r_dep_lost", "when": { "flag": "dependency_lost" }, "outcome": "partial", "title": "誰もいない席", "epilogue": "空席の謎を知る者はもういない。それでも、あなたの見たものは記録に残る。", "rewards": { "xp": 15, "gold": 0, "items": [] } }
+  ],
+  "fallbackPolicy": [
+    { "when": "turn_limit", "mode": "conclude", "resolution": "r_timeout" },
+    { "when": "character_down", "mode": "conclude", "resolution": "r_down" },
+    { "when": "dependency_lost", "mode": "conclude", "resolution": "r_dep_lost", "followup": "daily_request" }
+  ],
+  "impactLimits": { "maxXp": 50, "maxGold": 20 }
+}

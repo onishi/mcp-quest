@@ -1,10 +1,12 @@
 import * as eldia from "./initial/eldia.js";
 import goblinVillage from "./scenarios/goblin_village.json" with { type: "json" };
+import lastDrink from "./scenarios/last_drink.json" with { type: "json" };
+import missingHerbalist from "./scenarios/missing_herbalist.json" with { type: "json" };
 import type { WorldDef } from "./types.js";
 
 export * from "./types.js";
 
-export const scenarioSources: unknown[] = [goblinVillage];
+export const scenarioSources: unknown[] = [goblinVillage, missingHerbalist, lastDrink];
 
 export const eldiaWorld: WorldDef = {
   id: eldia.WORLD_ID,

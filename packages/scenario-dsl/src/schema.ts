@@ -59,7 +59,7 @@ export const CondSchema: z.ZodType<Cond> = z.lazy(() =>
   ]),
 );
 
-const DiceExpr = z.string().regex(/^\d{1,2}d(4|6|8|10|12|20)([+-]\d{1,2})?$|^\d{1,3}$/, "dice like 1d6+1 or a constant");
+const DiceExpr = z.string().regex(/^\d{1,2}d(2|3|4|6|8|10|12|20)([+-]\d{1,2})?$|^\d{1,3}$/, "dice like 1d6+1 or a constant");
 
 /** Closed effect vocabulary. */
 export const EffectSchema = z.discriminatedUnion("op", [
@@ -252,7 +252,7 @@ export const ScenarioSourceSchema = z
     clocks: z.array(ClockSchema).max(4).default([]),
     enemies: z.array(EnemySchema).max(8).default([]),
     triggers: z.array(TriggerSchema).min(1).max(64),
-    resolutions: z.array(ResolutionSchema).min(1).max(8),
+    resolutions: z.array(ResolutionSchema).min(1).max(12),
     fallbackPolicy: z.array(FallbackSchema).max(4).default([]),
     impactLimits: z
       .object({ maxXp: z.number().int().min(0).max(200), maxGold: z.number().int().min(0).max(200) })

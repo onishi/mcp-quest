@@ -35,6 +35,8 @@ export type CompileResult =
   | { ok: false; errors: CompileIssue[]; warnings: CompileIssue[] };
 
 export const DSL_RULE_VERSION = "scenario-dsl@1.0.0";
+/** Flags the kernel sets itself (e.g. the light spell or a torch). */
+export const RESERVED_FLAGS = new Set(["light"]);
 /** Upper bound on effects executed for a single trigger, including clock cascades. */
 export const MAX_EFFECTS_PER_TRIGGER = 16;
 
@@ -61,7 +63,7 @@ export async function compileScenario(source: unknown, catalog: WorldCatalog): P
   uniqueIds(s.objectives, "objectives", err);
 
   // Flags that are ever set (by any effect) — used for satisfiability checks.
-  const setFlags = new Set<string>();
+  const setFlags = new Set<string>(RESERVED_FLAGS);
   const revealedClues = new Set<string>();
   const givenItems = new Set<string>();
   const defeatable = new Set<string>();
@@ -188,7 +190,11 @@ export async function compileScenario(source: unknown, catalog: WorldCatalog): P
     n.targets.forEach((t, j) => checkCond(`nodes[${i}].targets[${j}].visibleWhen`, t.visibleWhen));
   });
   s.objectives.forEach((o, i) => checkCond(`objectives[${i}].doneWhen`, o.doneWhen));
-  s.resolutions.forEach((r, i) => checkCond(`resolutions[${i}].when`, r.when));
+  const directIds = new Set(s.fallbackPolicy.map((f) => f.resolution));
+  s.resolutions.forEach((r, i) => {
+    // withdraw / fallback resolutions are applied directly; their `when` is informational
+    if (r.outcome !== "withdrawn" && !directIds.has(r.id)) checkCond(`resolutions[${i}].when`, r.when);
+  });
 
   // Reachability of nodes from initialNode via exits or move_to effects.
   if (!nodeIds.has(s.initialNode)) err("initialNode", `unknown node ${s.initialNode}`);
