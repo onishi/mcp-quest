@@ -9,7 +9,7 @@ import { compiled, makeKernel, newCharacter, newPlayer, rid } from "../helpers/w
 
 const CLASSES = ["warrior", "mage", "thief", "cleric"];
 
-function pick<T>(arr: T[], r: number): T {
+function pick<T = any>(arr: T[], r: number): T {
   return arr[Math.floor(r * arr.length) % arr.length] as T;
 }
 
@@ -27,26 +27,26 @@ function play(seed: number, scenarioId: string, cls: string) {
   for (let step = 0; step < 200; step++) {
     const { actions } = kernel.call(acc, "get_actions", { episode_id: ep }) as any;
     // Avoid withdrawing most of the time so we explore the scenario.
-    const candidates = actions.filter((a: any) => a.action_id !== "withdraw" || rnd() < 0.02);
-    const a = pick(candidates, rnd()) as any;
+    const candidates: any[] = actions.filter((a: any) => a.action_id !== "withdraw" || rnd() < 0.02);
+    const a = pick<any>(candidates, rnd());
     const params: Record<string, string> = {};
-    const p = a.parameters;
-    if (a.action_id === "move") params.to = pick(p.to, rnd()).id;
-    if (a.action_id === "investigate") params.target_id = pick(p.target_id, rnd()).id;
+    const p: any = a.parameters;
+    if (a.action_id === "move") params.to = pick<any>(p.to, rnd()).id;
+    if (a.action_id === "investigate") params.target_id = pick<any>(p.target_id, rnd()).id;
     if (a.action_id === "talk") {
-      params.target_id = pick(p.target_id, rnd()).id;
-      params.approach = pick(p.approach, rnd());
+      params.target_id = pick<any>(p.target_id, rnd()).id;
+      params.approach = pick<any>(p.approach, rnd());
     }
     if (a.action_id === "interact") {
-      const c = pick(p.choices, rnd()) as any;
+      const c = pick<any>(p.choices, rnd()) as any;
       params.target_id = c.target_id;
       params.option_id = c.option_id;
     }
-    if (a.action_id === "use_item") params.item_id = pick(p.item_id, rnd()).id;
-    if (a.action_id === "attack") params.target_id = pick(p.target_id, rnd()).id;
+    if (a.action_id === "use_item") params.item_id = pick<any>(p.item_id, rnd()).id;
+    if (a.action_id === "attack") params.target_id = pick<any>(p.target_id, rnd()).id;
     if (a.action_id === "cast") {
-      params.spell_id = pick(p.spell_id, rnd()).id;
-      if (p.target_id) params.target_id = pick(p.target_id, rnd()).id;
+      params.spell_id = pick<any>(p.spell_id, rnd()).id;
+      if (p.target_id) params.target_id = pick<any>(p.target_id, rnd()).id;
     }
     try {
       last = kernel.call(acc, "act", { episode_id: ep, action_id: a.action_id, parameters: params, expected_turn: turn, request_id: rid() });

@@ -1,0 +1,28 @@
+// game Worker: MCP endpoint, OAuth, World Durable Object.
+// LLM-Free Runtime (spec §1.4): do NOT add an "ai" binding, LLM API secrets,
+// inference proxies or any binding that can trigger the Evolution pipeline.
+// scripts/check-llm-free.mjs enforces this in CI.
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "mcp-quest-game",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-11-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+  "vars": { "WORLD_INSTANCE": "dev" },
+  "durable_objects": {
+    "bindings": [{ "name": "WORLD", "class_name": "WorldDO" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["WorldDO"] }],
+  "kv_namespaces": [{ "binding": "OAUTH_KV", "id": "REPLACE_WITH_KV_NAMESPACE_ID" }],
+  "env": {
+    "production": {
+      "name": "mcp-quest-game-production",
+      "vars": { "WORLD_INSTANCE": "eldia-production" },
+      "durable_objects": {
+        "bindings": [{ "name": "WORLD", "class_name": "WorldDO" }]
+      },
+      "kv_namespaces": [{ "binding": "OAUTH_KV", "id": "REPLACE_WITH_PRODUCTION_KV_NAMESPACE_ID" }]
+    }
+  }
+}
