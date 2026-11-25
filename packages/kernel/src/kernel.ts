@@ -33,6 +33,7 @@ import {
   MAX_CREDITS,
   RULES_VERSION,
   RULE_TOPICS,
+  SKILL_ABILITY,
   SKILL_NAMES,
   buildCharacter,
   defense,
@@ -126,10 +127,37 @@ const ComponentSchemas: Record<(typeof COMPONENTS)[number], z.ZodType> = {
   relations: z.record(z.string(), z.number().int().min(-100).max(100)),
 };
 
-const ACTION_IDS = ["move", "investigate", "talk", "interact", "use_item", "attack", "cast", "defend", "flee", "withdraw"] as const;
+const ACTION_IDS = ["attempt", "talk", "move", "investigate", "interact", "use_item", "attack", "cast", "defend", "flee", "withdraw"] as const;
 type ActionId = (typeof ACTION_IDS)[number];
 const APPROACHES = ["friendly", "persuade", "intimidate", "deceive"] as const;
 const LIGHT_ITEMS = new Set(["torch", "lantern"]);
+const SOCIAL_APPROACH: Record<string, string> = { persuasion: "persuade", intimidation: "intimidate", deception: "deceive", insight: "friendly" };
+const INVESTIGATIVE = new Set(["perception", "lore", "arcana", "insight", "medicine"]);
+const DIFFICULTY: Record<string, number> = { trivial: 0, easy: 8, normal: 12, hard: 16, very_hard: 20 };
+/** turns without story progress before the GM receives a subtle nudge */
+const STALL_TURNS = 2;
+
+/** What the client AI may and may not invent when narrating a result. */
+const LICENSE = {
+  embellish: {
+    level: "embellish",
+    may: ["確定した結果の情景・台詞・感情を脚色する", "NPCの口調や仕草を演じる"],
+    must_not: ["結果（成否・ダメージ・入手物）を変える", "サーバーが返していない手がかり・秘密・報酬・約束を作る"],
+  },
+  free: {
+    level: "free",
+    may: [
+      "試みの過程と結果を自由に描写する（成否はサーバーの判定に従う）",
+      "場面に自然に存在する小物・風景・群衆・その場限りの会話を創作する",
+      "NPCを publicProfile と manner に沿って演じる",
+    ],
+    must_not: [
+      "新しい手がかり・世界の事実・NPCの秘密を確定させる",
+      "アイテム・お金・経験値・関係の変化を与える",
+      "敵を倒す、出口を開く、冒険を決着させる",
+    ],
+  },
+} as const;
 
 export class Kernel {
   readonly sql: Sql;
@@ -949,9 +977,10 @@ export class Kernel {
       character: { name: c.name, hp: c.hp, max_hp: c.max_hp, mp: c.mp, max_mp: c.max_mp, condition: c.condition },
       progress: {
         turn,
+        story_turn: turn - (st.freeActions ?? 0),
         target_turns: s.targetTurns,
         max_turns: s.maxTurns,
-        phase: phaseFor(turn, s.targetTurns, status),
+        phase: phaseFor(turn - (st.freeActions ?? 0), s.targetTurns, status),
         episode_complete: status === "completed",
       },
     };
@@ -993,7 +1022,7 @@ export class Kernel {
         description: target.description,
         public_profile: npc?.publicProfile,
         relation: npc ? (c.relations[npc.id] ?? 0) : undefined,
-        hint: "新しい情報を得るには act の investigate / talk を使う。",
+        hint: "新しい情報を得るにはプレイヤーの行動を act（investigate / talk / attempt）で送る。",
       };
     }
     const clue = st.clues.includes(targetId) ? s.clues.find((x) => x.id === targetId) : undefined;
@@ -1011,55 +1040,93 @@ export class Kernel {
     const s = this.scenarioFor(ep);
     const st = JSON.parse(ep.state) as EpisodeState;
     const c = this.loadCharacter(ep.character_id);
-    return { episode_id: episodeId, turn: ep.turn, expected_turn: ep.turn, actions: this.actionCatalog(s, st, c, ep.turn) };
+    return {
+      episode_id: episodeId,
+      turn: ep.turn,
+      expected_turn: ep.turn,
+      ...this.actionCatalog(s, st, c, ep.turn),
+      gm_note:
+        "これはGM用の資料。プレイヤーに行動や選択肢の一覧を見せない。プレイヤーの発言・行動はすべて act に変換する。affordances は場面が反応する仕掛けで、プレイヤーの自由な行動がそれに近ければ対応付け、近くなければ attempt で送る。",
+    };
   }
 
+  /**
+   * Action catalog for the GM. `actions` are the verbs; `affordances` are
+   * GM-only knowledge of what this scene can react to. Neither is meant to be
+   * shown to the player as a menu.
+   */
   private actionCatalog(s: CompiledScenario, st: EpisodeState, c: CharacterSheet, turn: number) {
     const hostR = this.readHost(c, turn);
     const targets = visibleTargets(s, st, hostR).filter((t) => t.kind !== "enemy");
     const triggers = eligibleTriggers(s, st, hostR);
     const items = Object.keys(c.items).map((id) => ({ id, name: this.items.get(id)?.name ?? id }));
+    const targetList = targets.map((t) => ({ id: t.id, name: t.name, kind: t.kind }));
+    const enemies = Object.keys(st.combat.enemies).map((id) => ({ id, name: s.enemies.find((e) => e.id === id)?.name }));
     const actions: Json[] = [];
+    actions.push({
+      action_id: "attempt",
+      description:
+        "どんな行動でも送れる汎用の行動。プレイヤーの意図を intent に書き、最も自然な技能を skill に、対象があれば target_id に入れる。場面に仕掛けがあればそれが反応し、なければサーバーが判定だけ行い、描写は narrative_license の範囲で自由。判定不要な行動は skill を省略。戦闘中に敵を target_id にすると即興の攻撃になる。",
+      parameters: {
+        intent: "自由記述（必須ではないが推奨）",
+        skill: Object.keys(SKILL_NAMES).map((k) => ({ id: k, name: SKILL_NAMES[k], modifier: skillModifier(c, k) })),
+        target_id: st.combat.active ? [...enemies, ...targetList] : targetList,
+        difficulty: Object.keys(DIFFICULTY),
+      },
+    });
+    const npcs = targets.filter((t) => t.kind === "npc");
+    if (npcs.length)
+      actions.push({
+        action_id: "talk",
+        description: "人物との会話（雑談・質問・交渉すべて）。approach は話し方（既定 friendly）、topic に話題や台詞の要旨。",
+        parameters: { target_id: npcs.map((t) => ({ id: t.id, name: t.name })), approach: [...APPROACHES], topic: "自由記述" },
+      });
     if (st.combat.active) {
-      const enemies = Object.entries(st.combat.enemies).map(([id]) => ({ id, name: s.enemies.find((e) => e.id === id)?.name }));
       actions.push({ action_id: "attack", description: "装備中の武器で攻撃する", parameters: { target_id: enemies } });
-      const spells = c.spells.map((id) => this.spells.get(id)).filter((sp): sp is SpellDef => !!sp && sp.mpCost <= c.mp);
-      if (spells.length)
-        actions.push({
-          action_id: "cast",
-          description: "呪文を唱える（MP消費）",
-          parameters: { spell_id: spells.map((sp) => ({ id: sp.id, name: sp.name, mp_cost: sp.mpCost, kind: sp.kind })), target_id: enemies },
-        });
       actions.push({ action_id: "defend", description: "身を守る（このラウンドの防御+4）", parameters: {} });
       actions.push({ action_id: "flee", description: "戦闘から逃げる（軽業 難易度12）", parameters: {} });
     } else {
       const exits = availableExits(s, st, hostR);
       if (exits.length)
         actions.push({ action_id: "move", description: "別の場所へ移動する", parameters: { to: exits.map((x) => ({ id: x.to, label: x.label, open: x.open })) } });
-      if (targets.length)
-        actions.push({ action_id: "investigate", description: "対象を詳しく調べる（判定が必要な場合がある）", parameters: { target_id: targets.map((t) => ({ id: t.id, name: t.name })) } });
-      const spells = c.spells.map((id) => this.spells.get(id)).filter((sp): sp is SpellDef => !!sp && sp.kind !== "attack" && sp.mpCost <= c.mp);
-      if (spells.length)
-        actions.push({ action_id: "cast", description: "呪文を唱える（MP消費）", parameters: { spell_id: spells.map((sp) => ({ id: sp.id, name: sp.name, mp_cost: sp.mpCost })) } });
+      if (targets.length) actions.push({ action_id: "investigate", description: "対象を詳しく調べる", parameters: { target_id: targetList } });
     }
-    const npcs = targets.filter((t) => t.kind === "npc");
-    if (npcs.length)
+    const spells = c.spells
+      .map((id) => this.spells.get(id))
+      .filter((sp): sp is SpellDef => !!sp && sp.mpCost <= c.mp && (st.combat.active || sp.kind !== "attack"));
+    if (spells.length)
       actions.push({
-        action_id: "talk",
-        description: "人物と話す。approach で話し方を選ぶ（既定 friendly）",
-        parameters: { target_id: npcs.map((t) => ({ id: t.id, name: t.name })), approach: [...APPROACHES] },
+        action_id: "cast",
+        description: "呪文を唱える（MP消費）",
+        parameters: { spell_id: spells.map((sp) => ({ id: sp.id, name: sp.name, mp_cost: sp.mpCost, kind: sp.kind })), ...(st.combat.active ? { target_id: enemies } : {}) },
       });
-    const options = triggers.filter((t) => t.action === "interact" && (!st.combat.active || t.target));
-    if (options.length)
-      actions.push({
-        action_id: "interact",
-        description: "この場面固有の行動",
-        parameters: { choices: options.map((t) => ({ target_id: t.target, option_id: t.option, label: t.label })) },
-      });
-    if (items.length)
-      actions.push({ action_id: "use_item", description: "所持品を使う（対象を指定できる）", parameters: { item_id: items, target_id: "任意" } });
+    if (items.length) actions.push({ action_id: "use_item", description: "所持品を使う（対象を指定できる）", parameters: { item_id: items, target_id: "任意" } });
+    if (triggers.some((t) => t.action === "interact"))
+      actions.push({ action_id: "interact", description: "affordances にある場面固有の行動（target_id と option_id）", parameters: {} });
     actions.push({ action_id: "withdraw", description: "冒険から撤退して決着とする（冒険権は戻らない）", parameters: {} });
-    return actions;
+
+    const affordances = triggers
+      .filter((t) => t.action === "interact" || t.action === "attempt")
+      .filter((t) => !st.combat.active || t.action === "interact")
+      .map((t) =>
+        t.action === "interact"
+          ? { via: "interact", target_id: t.target, option_id: t.option, idea: t.label }
+          : {
+              via: "attempt",
+              target_id: t.target,
+              idea: t.gmHint ?? t.label ?? "この対象への工夫した働きかけ",
+              skills: t.accepts?.map((x) => x.skill),
+            },
+      );
+    return { actions, affordances };
+  }
+
+  private pickHint(s: CompiledScenario, st: EpisodeState, c: CharacterSheet, turn: number) {
+    const hostR = this.readHost(c, turn);
+    const open = (s.hints ?? []).filter((h) => (!h.when || evalCond(h.when, st, hostR)) && !(h.until && evalCond(h.until, st, hostR)));
+    if (open.length === 0) return undefined;
+    const given = st.hintsGiven ?? [];
+    return open.find((h) => !given.includes(h.id)) ?? open.sort((a, b) => given.indexOf(a.id) - given.indexOf(b.id))[0];
   }
 
   // ------------------------------------------------------------------ act
@@ -1168,7 +1235,8 @@ export class Kernel {
 
     if (!ACTION_IDS.includes(actionId))
       throw new GameError("UNSUPPORTED_ACTION", `行動 ${input.action_id} は未実装です。`, {
-        alternatives: this.actionCatalog(s, st, c, ep.turn).map((a) => a.action_id),
+        alternatives: ["attempt"],
+        hint: "自由な行動は action_id=attempt（skill と intent）で送る。",
       });
 
     const out = emptyOutput();
@@ -1187,11 +1255,16 @@ export class Kernel {
     if (st.combat.active && ["move", "investigate"].includes(actionId))
       throw new GameError("INVALID_ACTION", "戦闘中はその行動を取れません。attack / cast / defend / flee / use_item / talk / withdraw を選んでください。");
 
-    const runTrigger = (t: Trigger) => {
+    let license: (typeof LICENSE)[keyof typeof LICENSE] = LICENSE.embellish;
+    let improvised: Json | undefined;
+    let npcReaction: Json | undefined;
+    let free = false;
+    const runTrigger = (t: Trigger, skill?: string) => {
       if (t.text) out.texts.push(t.text);
       applyEffects(s, st, host, t.effects, out);
-      if (t.check) {
-        const r = this.skillCheck(c, t.check.skill, t.check.difficulty, dice);
+      const check = t.accepts ? (t.accepts.find((a) => a.skill === skill) ?? t.accepts[0]) : t.check;
+      if (check) {
+        const r = this.skillCheck(c, check.skill, check.difficulty, dice);
         checks.push(r);
         if (r.outcome === "success") {
           if (t.successText) out.texts.push(t.successText);
@@ -1233,7 +1306,65 @@ export class Kernel {
           triggers.find((t) => t.action === "talk" && t.target === target.id && t.approach === approach) ??
           triggers.find((t) => t.action === "talk" && t.target === target.id && !t.approach);
         if (trig) runTrigger(trig);
-        else out.texts.push(`${target.name}と言葉を交わしたが、今は新しい話は聞けなかった。`);
+        else {
+          npcReaction = this.npcReaction(c, target, turn);
+          license = LICENSE.free;
+          free = true;
+        }
+        break;
+      }
+      case "attempt": {
+        const skill = params.skill;
+        if (skill !== undefined && !SKILL_NAMES[skill])
+          throw new GameError("INVALID_INPUT", "skill が不正です。", { skills: Object.keys(SKILL_NAMES) });
+        const targetId = params.target_id;
+        // Improvised combat move against an enemy (throwing a chair, a shield bash, ...).
+        if (st.combat.active && targetId && st.combat.enemies[targetId]) {
+          const sk = skill ?? "athletics";
+          combatLog.push(
+            this.playerAttack(c, s, st, targetId, dice, out, { ability: SKILL_ABILITY[sk] ?? "str", damage: "1d6", label: "即興の一手", bonus: proficiency(c) }),
+          );
+          improvised = { intent: params.intent, skill: sk, kind: "combat" };
+          break;
+        }
+        const target = targetId ? findTarget(targetId) : undefined;
+        let trig: Trigger | undefined;
+        if (target && skill) {
+          trig =
+            triggers.find((t) => t.action === "attempt" && t.target === target.id && t.accepts?.some((a) => a.skill === skill)) ??
+            (target.kind === "npc" && SOCIAL_APPROACH[skill]
+              ? (triggers.find((t) => t.action === "talk" && t.target === target.id && t.approach === SOCIAL_APPROACH[skill] && (!t.check || t.check.skill === skill)) ??
+                triggers.find((t) => t.action === "talk" && t.target === target.id && !t.approach && t.check?.skill === skill))
+              : undefined) ??
+            (target.kind !== "npc" && INVESTIGATIVE.has(skill)
+              ? triggers.find((t) => t.action === "investigate" && t.target === target.id)
+              : undefined);
+        }
+        if (trig) {
+          runTrigger(trig, skill);
+          break;
+        }
+        // Generic attempt: the server rolls (or not), the GM narrates within the license.
+        license = LICENSE.free;
+        const dc = DIFFICULTY[params.difficulty ?? "normal"] ?? 12;
+        let outcome = "automatic";
+        if (skill && dc > 0) {
+          const r = this.skillCheck(c, skill, dc, dice);
+          checks.push(r);
+          outcome = r.outcome;
+          if (target?.entity && target.kind === "npc") {
+            const delta = r.outcome === "success" ? (skill === "intimidation" || skill === "deception" ? 0 : 2) : skill === "intimidation" || skill === "deception" ? -3 : 0;
+            if (delta) c.relations[target.entity] = Math.max(-100, Math.min(100, (c.relations[target.entity] ?? 0) + delta));
+          }
+        } else free = true;
+        improvised = {
+          intent: params.intent,
+          skill: skill ?? null,
+          target: target ? { id: target.id, name: target.name } : null,
+          outcome,
+          note: "この試みは物語の確定事項を変えない。結果は narrative_license の範囲で描写する。",
+        };
+        if (target?.kind === "npc") npcReaction = this.npcReaction(c, target, turn);
         break;
       }
       case "interact": {
@@ -1321,6 +1452,8 @@ export class Kernel {
       }
     }
 
+    if (free) st.freeActions = (st.freeActions ?? 0) + 1;
+
     // Enemies act after the player's action while combat continues.
     if (st.combat.active) {
       for (const [enemyId] of Object.entries(st.combat.enemies)) {
@@ -1339,12 +1472,28 @@ export class Kernel {
 
     let resolution: Resolution | undefined = findResolution(s, st, host);
     let reason = "resolved";
-    if (!resolution && turn >= s.maxTurns) {
+    // Free actions don't consume the story budget, but a hard cap keeps every episode finite.
+    if (!resolution && (turn - (st.freeActions ?? 0) >= s.maxTurns || turn >= s.maxTurns * 2)) {
       const fb = s.fallbackPolicy.find((f) => f.when === "turn_limit");
       resolution = s.resolutions.find((r) => r.id === fb?.resolution);
       reason = "turn_limit";
     }
-    return this.finishAct({ ep, s, st, c, dice, turn, actionId, params, out, check: checks, combatLog, resolution, reason, resumed });
+    return this.finishAct({ ep, s, st, c, dice, turn, actionId, params, out, check: checks, combatLog, resolution, reason, resumed, license, improvised, npcReaction });
+  }
+
+  /** In-character material for free dialogue. Public data only. */
+  private npcReaction(c: CharacterSheet, target: { id: string; name: string; entity?: string; description: string }, turn: number): Json {
+    const npc = target.entity ? this.world.npcs.find((n) => n.id === target.entity) : undefined;
+    const rel = npc ? (c.relations[npc.id] ?? 0) : 0;
+    const rumors = npc?.rumors ?? [];
+    return {
+      name: target.name,
+      profile: npc?.publicProfile ?? target.description,
+      manner: npc?.manner,
+      disposition: rel >= 15 ? "親しい" : rel >= 5 ? "好意的" : rel <= -10 ? "敵対的" : rel < 0 ? "警戒している" : "普通",
+      may_mention: rumors.length ? rumors[turn % rumors.length] : undefined,
+      guidance: "この人物として自由に応答してよい。may_mention は話の流れが合えば触れてよい噂。秘密や新事実は語らせない。",
+    };
   }
 
   private pickEnemy(st: EpisodeState, targetId: string | undefined): string {
@@ -1438,9 +1587,29 @@ export class Kernel {
     resolution?: Resolution;
     reason: string;
     resumed?: boolean;
+    license?: (typeof LICENSE)[keyof typeof LICENSE];
+    improvised?: Json;
+    npcReaction?: Json;
   }): Json {
     const { ep, s, st, c, turn, out } = a;
     const before = this.loadCharacter(c.character_id);
+    const prev = JSON.parse(ep.state) as EpisodeState;
+    const progressed =
+      st.clues.length > prev.clues.length ||
+      st.flags.length !== prev.flags.length ||
+      st.node !== prev.node ||
+      st.defeated.length > prev.defeated.length ||
+      st.combat.active !== prev.combat.active;
+    if (progressed || st.progressTurn === undefined) st.progressTurn = turn;
+    let nudge: Json | undefined;
+    if (!a.resolution && !st.combat.active && turn - (st.progressTurn ?? 0) >= STALL_TURNS) {
+      const h = this.pickHint(s, st, c, turn);
+      if (h) {
+        nudge = { text: h.text, how: "選択肢として列挙しない。NPCの仕草、環境の変化、キャラクターのふとした気づきとして描写にさりげなく織り込む。" };
+        st.hintsGiven = [...(st.hintsGiven ?? []).filter((x) => x !== h.id), h.id];
+        st.progressTurn = turn;
+      }
+    }
     // knowledge from revealed clues
     const eventId = this.emit({
       type: "episode.action_resolved",
@@ -1474,7 +1643,7 @@ export class Kernel {
     }
 
     this.saveCharacter(c);
-    const phase = phaseFor(turn, s.targetTurns, status);
+    const phase = phaseFor(turn - (st.freeActions ?? 0), s.targetTurns, status);
     this.sql.run(
       "UPDATE episodes SET status = ?, phase = ?, turn = ?, state = ?, updated_at = ? WHERE episode_id = ?",
       status,
@@ -1510,13 +1679,17 @@ export class Kernel {
         combat: a.combatLog,
       },
       narration: out.texts,
+      narrative_license: a.license ?? LICENSE.embellish,
+      ...(a.improvised ? { improvised: a.improvised } : {}),
+      ...(a.npcReaction ? { npc_reaction: a.npcReaction } : {}),
+      ...(nudge ? { gm_nudge: nudge } : {}),
       revealed_clues: out.revealedClues.map((id) => ({ id, text: s.clues.find((x) => x.id === id)?.text })),
       changes,
       scene: view.scene,
       combat: view.combat,
       objectives: view.objectives,
       character: view.character,
-      available_actions: status === "completed" ? [] : this.actionCatalog(s, st, c, turn).map((x) => x.action_id),
+      available_actions: status === "completed" ? [] : this.actionCatalog(s, st, c, turn).actions.map((x) => x.action_id),
       narration_guidance:
         status === "completed"
           ? "冒険は決着した。epilogue を元に結末を描写し、報酬と世界への影響を伝える。rate_adventure で評価を任意で尋ね、次の冒険は get_adventures で確認できると伝える。"

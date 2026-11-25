@@ -15,6 +15,10 @@ export interface NpcDef {
   role: string;
   location: string;
   publicProfile: string;
+  /** public: how this NPC talks, for in-character free dialogue */
+  manner?: string;
+  /** public small talk / rumours the NPC may share in free dialogue (never secrets) */
+  rumors?: string[];
   /** server-only; never returned to players */
   goals: string[];
   fears: string[];

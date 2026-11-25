@@ -28,14 +28,23 @@
 
 `account_id` はツール入力では受け付けない（認可トークンからのみ決まる）。
 
+## プレイの原則
+
+- プレイヤーの発言・行動は**すべて** `act` に変換する（会話も行動）。
+- `get_actions` は GM 用の資料。`actions`（動詞）と `affordances`（場面が反応する仕掛け）を返すが、プレイヤーに一覧として見せない。
+- 仕掛けに当てはまらない発想は `attempt` で送る。サーバーは判定だけ行い、描写は `narrative_license` の範囲で GM が創作してよい。
+- 進展が止まると `gm_nudge` が返る。選択肢としてではなく、描写にさりげなく織り込む。
+- 判定のない自由行動（雑談・ちょっとした所作）は物語のターン予算（`story_turn`）を消費しない。ただし `max_turns × 2` で必ず決着する。
+
 ## 行動（`act.action_id`）
 
 | action_id | parameters | 備考 |
 |---|---|---|
+| `attempt` | `intent`, `skill?`, `target_id?`, `difficulty?`（trivial/easy/normal/hard/very_hard） | 何でも。場面の仕掛け（`accepts` に含まれる技能）→ 会話・調査の仕掛け → 汎用判定の順に解決。戦闘中に敵を対象にすると即興の攻撃 |
 | `move` | `to` | 出口のノード ID。条件付き出口は `lockedText` 付きで拒否 |
 | `investigate` | `target_id` | 判定が必要な場合あり |
-| `talk` | `target_id`, `approach`（friendly / persuade / intimidate / deceive） | 既定 friendly |
-| `interact` | `target_id`, `option_id` | 場面固有の選択肢（`get_actions` の `choices`） |
+| `talk` | `target_id`, `approach?`（friendly / persuade / intimidate / deceive）, `topic?` | 仕掛けがなければ `npc_reaction`（口調・態度・話してよい噂）を返し、GM が自由に演じる |
+| `interact` | `target_id`, `option_id` | `affordances` の `via: interact` |
 | `use_item` | `item_id`, `target_id?` | 傷薬は回復、松明・ランタンは灯り |
 | `attack` | `target_id` | 戦闘中のみ |
 | `cast` | `spell_id`, `target_id?` | MP 消費。攻撃呪文は戦闘中のみ |
@@ -59,8 +68,10 @@
   "changes": { "hp": -2, "items": { "mine_map": 1 } },
   "scene": { "name": "旧鉱山の入口", "targets": [], "exits": [] },
   "available_actions": ["move", "investigate", "talk", "interact", "use_item", "withdraw"],
+  "narrative_license": { "level": "embellish", "may": ["…"], "must_not": ["…"] },
+  "gm_nudge": { "text": "見張りは眠たげで、腹の虫を鳴らしている。…", "how": "選択肢として列挙しない。…" },
   "narration_guidance": "未確認の情報は断定しない。判定結果を変えない。",
-  "progress": { "turn": 5, "target_turns": 12, "max_turns": 24, "phase": "exploration", "episode_complete": false },
+  "progress": { "turn": 5, "story_turn": 4, "target_turns": 12, "max_turns": 24, "phase": "exploration", "episode_complete": false },
   "conclusion": { "outcome": "success", "title": "…", "epilogue": "…", "rewards": { "xp": 60, "gold": 30 } }
 }
 ```

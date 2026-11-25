@@ -25,12 +25,24 @@ function play(seed: number, scenarioId: string, cls: string) {
   let last: any = start;
   const outcomes = new Set<string>();
   for (let step = 0; step < 200; step++) {
-    const { actions } = kernel.call(acc, "get_actions", { episode_id: ep }) as any;
+    const { actions, affordances } = kernel.call(acc, "get_actions", { episode_id: ep }) as any;
     // Avoid withdrawing most of the time so we explore the scenario.
-    const candidates: any[] = actions.filter((a: any) => a.action_id !== "withdraw" || rnd() < 0.02);
+    const candidates: any[] = actions.filter((a: any) => (a.action_id !== "withdraw" || rnd() < 0.02) && (a.action_id !== "interact" || affordances.some((x: any) => x.via === "interact")));
     const a = pick<any>(candidates, rnd());
     const params: Record<string, string> = {};
     const p: any = a.parameters;
+    if (a.action_id === "attempt") {
+      const aff = affordances.filter((x: any) => x.via === "attempt");
+      if (aff.length && rnd() < 0.6) {
+        const x = pick<any>(aff, rnd());
+        params.target_id = x.target_id;
+        params.skill = rnd() < 0.7 ? pick<string>(x.skills, rnd()) : pick<any>(p.skill, rnd()).id;
+      } else {
+        if (p.target_id.length && rnd() < 0.8) params.target_id = pick<any>(p.target_id, rnd()).id;
+        if (rnd() < 0.8) params.skill = pick<any>(p.skill, rnd()).id;
+      }
+      params.intent = "シミュレーション";
+    }
     if (a.action_id === "move") params.to = pick<any>(p.to, rnd()).id;
     if (a.action_id === "investigate") params.target_id = pick<any>(p.target_id, rnd()).id;
     if (a.action_id === "talk") {
@@ -38,7 +50,7 @@ function play(seed: number, scenarioId: string, cls: string) {
       params.approach = pick<any>(p.approach, rnd());
     }
     if (a.action_id === "interact") {
-      const c = pick<any>(p.choices, rnd()) as any;
+      const c = pick<any>(affordances.filter((x: any) => x.via === "interact"), rnd());
       params.target_id = c.target_id;
       params.option_id = c.option_id;
     }
@@ -67,7 +79,7 @@ function play(seed: number, scenarioId: string, cls: string) {
   }
   const s = compiled.scenarios.find((x) => x.id === scenarioId)!;
   expect(last.progress.episode_complete, `seed ${seed} did not terminate`).toBe(true);
-  expect(turn).toBeLessThanOrEqual(s.maxTurns);
+  expect(turn).toBeLessThanOrEqual(s.maxTurns * 2);
   const sheet = (kernel.call(acc, "get_character", { character_id: chr }) as any).character;
   expect(sheet.gold).toBeGreaterThanOrEqual(0);
   expect(sheet.xp).toBeLessThanOrEqual(s.impactLimits.maxXp);

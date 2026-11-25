@@ -22,6 +22,10 @@ describe("player responses never leak server-only data", () => {
     outputs.push(kernel.call(acc, "inspect", { episode_id: ep.episode_id, target_id: "marta" }));
     outputs.push(kernel.call(acc, "get_character", { character_id: chr }));
     outputs.push(kernel.call(acc, "get_rules", {}));
+    for (let i = 0; i < 4; i++) {
+      const obs = kernel.call(acc, "observe", { episode_id: ep.episode_id }) as any;
+      outputs.push(kernel.call(acc, "act", { episode_id: ep.episode_id, action_id: "talk", parameters: { target_id: "marta", topic: "噂話" }, expected_turn: obs.turn, request_id: rid() }));
+    }
     const text = JSON.stringify(outputs);
     for (const secret of SECRET_STRINGS) expect(text, `leaked: ${secret}`).not.toContain(secret);
     // Internal fields of the scenario (seed, triggers, resolutions) are never returned.

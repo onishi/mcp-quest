@@ -132,10 +132,18 @@ export async function compileScenario(source: unknown, catalog: WorldCatalog): P
     if (t.action === "interact" && (!t.target || !t.option || !t.label))
       err(`triggers[${i}]`, "interact needs target, option and label");
     if (t.action === "use_item" && !t.item) err(`triggers[${i}]`, "use_item needs item");
+    if (t.action === "attempt") {
+      if (!t.target) err(`triggers[${i}]`, "attempt needs target");
+      if (!t.accepts) err(`triggers[${i}]`, "attempt needs accepts (one or more skills)");
+      if (t.check) err(`triggers[${i}]`, "attempt uses accepts instead of check");
+      const skills = (t.accepts ?? []).map((a) => a.skill);
+      if (new Set(skills).size !== skills.length) err(`triggers[${i}].accepts`, "duplicate skill");
+    } else if (t.accepts) err(`triggers[${i}]`, "accepts is only valid for attempt");
     if (t.item && !catalog.items.has(t.item)) err(`triggers[${i}].item`, `unknown item ${t.item}`);
-    if (t.check && t.onSuccess.length === 0 && t.effects.length === 0)
+    const rolled = !!t.check || !!t.accepts;
+    if (rolled && t.onSuccess.length === 0 && t.effects.length === 0)
       warnings.push({ path: `triggers[${i}]`, message: "check without onSuccess effects" });
-    if (!t.check && (t.onSuccess.length > 0 || t.onFailure.length > 0))
+    if (!rolled && (t.onSuccess.length > 0 || t.onFailure.length > 0))
       err(`triggers[${i}]`, "onSuccess/onFailure require a check");
     t.nodes?.forEach((n) => nodeIds.has(n) || err(`triggers[${i}].nodes`, `unknown node ${n}`));
     if (t.target) {
@@ -190,6 +198,11 @@ export async function compileScenario(source: unknown, catalog: WorldCatalog): P
     n.targets.forEach((t, j) => checkCond(`nodes[${i}].targets[${j}].visibleWhen`, t.visibleWhen));
   });
   s.objectives.forEach((o, i) => checkCond(`objectives[${i}].doneWhen`, o.doneWhen));
+  uniqueIds(s.hints, "hints", err);
+  s.hints.forEach((h, i) => {
+    checkCond(`hints[${i}].when`, h.when);
+    checkCond(`hints[${i}].until`, h.until);
+  });
   const directIds = new Set(s.fallbackPolicy.map((f) => f.resolution));
   s.resolutions.forEach((r, i) => {
     // withdraw / fallback resolutions are applied directly; their `when` is informational
@@ -252,6 +265,7 @@ export async function compileScenario(source: unknown, catalog: WorldCatalog): P
   if (catalog.secretFacts) {
     for (const f of catalog.secretFacts) {
       if (s.hook.includes(f) || s.publicSummary.includes(f)) err("hook", `public text references secret fact ${f}`);
+      s.hints.forEach((h, i) => h.text.includes(f) && err(`hints[${i}]`, `hint references secret fact ${f}`));
     }
   }
 

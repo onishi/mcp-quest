@@ -1,6 +1,6 @@
 {
   "id": "goblin_village",
-  "version": 1,
+  "version": 2,
   "schemaVersion": 1,
   "title": "ゴブリンたちの村",
   "kind": "mixed",
@@ -11,151 +11,1396 @@
   "hook": "冒険者ギルドの支部長マルタが渋い顔で依頼書を差し出す。「旧鉱山に住み着いたゴブリンどもが、夜な夜な村の食料や道具を盗んでいく。討つなり追い払うなり話をつけるなり、やり方は任せる。とにかく片を付けてくれ」",
   "publicSummary": "旧鉱山のゴブリンによる盗みを解決する。討伐・交渉・移住など解決方法は自由。",
   "gmNotes": "ゴブリンは悪意ではなく飢えと恐怖から盗んでいる。交渉ルートを閉ざさないこと。戦闘は避けられるが、警戒度が満ちると戦闘になる。",
-  "tags": ["beginner", "combat", "negotiation"],
+  "tags": [
+    "beginner",
+    "combat",
+    "negotiation"
+  ],
   "uniqueness": "unique_per_character",
   "dependencies": [
-    { "entity": "npc_grik", "predicate": "alive" },
-    { "entity": "npc_marta", "predicate": "alive" }
+    {
+      "entity": "npc_grik",
+      "predicate": "alive"
+    },
+    {
+      "entity": "npc_marta",
+      "predicate": "alive"
+    }
   ],
   "objectives": [
-    { "id": "o_cause", "text": "盗みの理由を突き止める", "required": false, "doneWhen": { "any": [{ "clue": "c_goblin_fear" }, { "clue": "c_claw_marks" }, { "clue": "c_starving" }] } },
-    { "id": "o_resolve", "text": "ゴブリンの問題に決着をつける", "required": true, "doneWhen": { "any": [{ "flag": "deal_relocate" }, { "flag": "deal_truce" }, { "flag": "goblins_cowed" }, { "defeated": "grik_enemy" }] } }
+    {
+      "id": "o_cause",
+      "text": "盗みの理由を突き止める",
+      "required": false,
+      "doneWhen": {
+        "any": [
+          {
+            "clue": "c_goblin_fear"
+          },
+          {
+            "clue": "c_claw_marks"
+          },
+          {
+            "clue": "c_starving"
+          }
+        ]
+      }
+    },
+    {
+      "id": "o_resolve",
+      "text": "ゴブリンの問題に決着をつける",
+      "required": true,
+      "doneWhen": {
+        "any": [
+          {
+            "flag": "deal_relocate"
+          },
+          {
+            "flag": "deal_truce"
+          },
+          {
+            "flag": "goblins_cowed"
+          },
+          {
+            "defeated": "grik_enemy"
+          }
+        ]
+      }
+    }
   ],
   "initialNode": "guild",
   "nodes": [
     {
-      "id": "guild", "name": "ギルド支部", "location": "loc_guild",
+      "id": "guild",
+      "name": "ギルド支部",
+      "location": "loc_guild",
       "description": "傾いた受付台の向こうで、支部長マルタが腕を組んでいる。壁の掲示板には被害の一覧が貼られている。",
       "targets": [
-        { "id": "marta", "name": "支部長マルタ", "kind": "npc", "entity": "npc_marta", "description": "元冒険者の豪快な女性。左頬に古い傷がある。" },
-        { "id": "notice_board", "name": "被害一覧の貼り紙", "kind": "object", "description": "村人たちの被害が書き連ねられた貼り紙。" }
+        {
+          "id": "marta",
+          "name": "支部長マルタ",
+          "kind": "npc",
+          "entity": "npc_marta",
+          "description": "元冒険者の豪快な女性。左頬に古い傷がある。"
+        },
+        {
+          "id": "notice_board",
+          "name": "被害一覧の貼り紙",
+          "kind": "object",
+          "description": "村人たちの被害が書き連ねられた貼り紙。"
+        }
       ],
       "exits": [
-        { "to": "smithy", "label": "鍛冶屋のブランを訪ねる" },
-        { "to": "mine_entrance", "label": "旧鉱山へ向かう" }
+        {
+          "to": "smithy",
+          "label": "鍛冶屋のブランを訪ねる"
+        },
+        {
+          "to": "mine_entrance",
+          "label": "旧鉱山へ向かう"
+        }
       ]
     },
     {
-      "id": "smithy", "name": "ブランの鍛冶屋", "location": "loc_smithy",
+      "id": "smithy",
+      "name": "ブランの鍛冶屋",
+      "location": "loc_smithy",
       "description": "炉の熱気の中、ドワーフの鍛冶師ブランが槌を振るっている。壁には鉱山時代の古いつるはしが掛かっている。",
       "targets": [
-        { "id": "bran", "name": "鍛冶師ブラン", "kind": "npc", "entity": "npc_bran", "description": "白髭を三つ編みにしたドワーフ。目つきは鋭いが、鉱山の話になると少し遠い目をする。" },
-        { "id": "old_pickaxe", "name": "古いつるはし", "kind": "object", "description": "柄に鉱夫たちの名前が刻まれたつるはし。" }
+        {
+          "id": "bran",
+          "name": "鍛冶師ブラン",
+          "kind": "npc",
+          "entity": "npc_bran",
+          "description": "白髭を三つ編みにしたドワーフ。目つきは鋭いが、鉱山の話になると少し遠い目をする。"
+        },
+        {
+          "id": "old_pickaxe",
+          "name": "古いつるはし",
+          "kind": "object",
+          "description": "柄に鉱夫たちの名前が刻まれたつるはし。"
+        }
       ],
       "exits": [
-        { "to": "guild", "label": "ギルドへ戻る" },
-        { "to": "mine_entrance", "label": "旧鉱山へ向かう" }
+        {
+          "to": "guild",
+          "label": "ギルドへ戻る"
+        },
+        {
+          "to": "mine_entrance",
+          "label": "旧鉱山へ向かう"
+        }
       ]
     },
     {
-      "id": "mine_entrance", "name": "旧鉱山の入口", "location": "loc_old_mine",
+      "id": "mine_entrance",
+      "name": "旧鉱山の入口",
+      "location": "loc_old_mine",
       "description": "板で塞がれていたはずの坑口が開いている。入口脇の岩陰で、槍を抱えたゴブリンが一匹、居眠り半分で見張りをしている。",
       "targets": [
-        { "id": "sentry_post", "name": "見張りのゴブリン", "kind": "npc", "description": "痩せた若いゴブリン。槍の穂先は錆びている。", "visibleWhen": { "not": { "any": [{ "flag": "sentry_dealt" }, { "defeated": "sentry" }, { "combat": true }] } } },
-        { "id": "tracks", "name": "地面の足跡", "kind": "feature", "description": "小さな裸足の足跡が無数に入り乱れている。" },
-        { "id": "sentry", "name": "見張りのゴブリン", "kind": "enemy", "description": "槍を構えた若いゴブリン。" },
-        { "id": "goblin_a", "name": "ゴブリンの戦士", "kind": "enemy", "description": "棍棒を持ったゴブリン。" },
-        { "id": "goblin_b", "name": "ゴブリンの戦士", "kind": "enemy", "description": "錆びた短剣を持ったゴブリン。" }
+        {
+          "id": "sentry_post",
+          "name": "見張りのゴブリン",
+          "kind": "npc",
+          "description": "痩せた若いゴブリン。槍の穂先は錆びている。",
+          "visibleWhen": {
+            "not": {
+              "any": [
+                {
+                  "flag": "sentry_dealt"
+                },
+                {
+                  "defeated": "sentry"
+                },
+                {
+                  "combat": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "tracks",
+          "name": "地面の足跡",
+          "kind": "feature",
+          "description": "小さな裸足の足跡が無数に入り乱れている。"
+        },
+        {
+          "id": "sentry",
+          "name": "見張りのゴブリン",
+          "kind": "enemy",
+          "description": "槍を構えた若いゴブリン。"
+        },
+        {
+          "id": "goblin_a",
+          "name": "ゴブリンの戦士",
+          "kind": "enemy",
+          "description": "棍棒を持ったゴブリン。"
+        },
+        {
+          "id": "goblin_b",
+          "name": "ゴブリンの戦士",
+          "kind": "enemy",
+          "description": "錆びた短剣を持ったゴブリン。"
+        }
       ],
       "exits": [
-        { "to": "upper_gallery", "label": "坑道に入る", "requires": { "any": [{ "flag": "sentry_dealt" }, { "defeated": "sentry" }, { "flag": "found_side_path" }] }, "lockedText": "見張りのゴブリンが坑口を塞いでいる。気づかれずに通るか、話をつけるか、別の道を探す必要がある。" },
-        { "to": "guild", "label": "村へ戻る" }
+        {
+          "to": "upper_gallery",
+          "label": "坑道に入る",
+          "requires": {
+            "any": [
+              {
+                "flag": "sentry_dealt"
+              },
+              {
+                "defeated": "sentry"
+              },
+              {
+                "flag": "found_side_path"
+              }
+            ]
+          },
+          "lockedText": "見張りのゴブリンが坑口を塞いでいる。気づかれずに通るか、話をつけるか、別の道を探す必要がある。"
+        },
+        {
+          "to": "guild",
+          "label": "村へ戻る"
+        }
       ]
     },
     {
-      "id": "upper_gallery", "name": "上層坑道", "location": "loc_old_mine",
+      "id": "upper_gallery",
+      "name": "上層坑道",
+      "location": "loc_old_mine",
       "description": "湿った坑道。壁際には村から盗まれたらしい鍋や麻袋が積まれている。奥には、さらに深部へ続く暗い竪穴がぽっかりと口を開けている。",
       "targets": [
-        { "id": "stolen_goods", "name": "盗品の山", "kind": "object", "description": "鍋、麻袋、干し肉、古い毛布。" },
-        { "id": "dark_shaft", "name": "深部への竪穴", "kind": "feature", "description": "底の見えない竪穴。冷たい風が吹き上がってくる。" },
-        { "id": "goblin_a", "name": "ゴブリンの戦士", "kind": "enemy", "description": "棍棒を持ったゴブリン。" },
-        { "id": "goblin_b", "name": "ゴブリンの戦士", "kind": "enemy", "description": "錆びた短剣を持ったゴブリン。" }
+        {
+          "id": "stolen_goods",
+          "name": "盗品の山",
+          "kind": "object",
+          "description": "鍋、麻袋、干し肉、古い毛布。"
+        },
+        {
+          "id": "dark_shaft",
+          "name": "深部への竪穴",
+          "kind": "feature",
+          "description": "底の見えない竪穴。冷たい風が吹き上がってくる。"
+        },
+        {
+          "id": "goblin_a",
+          "name": "ゴブリンの戦士",
+          "kind": "enemy",
+          "description": "棍棒を持ったゴブリン。"
+        },
+        {
+          "id": "goblin_b",
+          "name": "ゴブリンの戦士",
+          "kind": "enemy",
+          "description": "錆びた短剣を持ったゴブリン。"
+        }
       ],
       "exits": [
-        { "to": "goblin_camp", "label": "焚き火の明かりの方へ進む" },
-        { "to": "mine_entrance", "label": "入口へ戻る" }
+        {
+          "to": "goblin_camp",
+          "label": "焚き火の明かりの方へ進む"
+        },
+        {
+          "to": "mine_entrance",
+          "label": "入口へ戻る"
+        }
       ]
     },
     {
-      "id": "goblin_camp", "name": "ゴブリンの野営地", "location": "loc_old_mine",
+      "id": "goblin_camp",
+      "name": "ゴブリンの野営地",
+      "location": "loc_old_mine",
       "description": "広い採掘場に焚き火が焚かれ、痩せたゴブリンたちが身を寄せ合っている。骨と羽で飾られた杖を持つ年老いたゴブリンが、あなたを睨みつけた。",
-      "onEnter": [{ "op": "advance_clock", "id": "alarm", "amount": 1 }],
-      "targets": [
-        { "id": "grik", "name": "族長グリク", "kind": "npc", "entity": "npc_grik", "description": "片目の老ゴブリン。人間の言葉を少し話す。", "visibleWhen": { "not": { "combat": true } } },
-        { "id": "cooking_pot", "name": "煮炊きの鍋", "kind": "object", "description": "ほとんど水だけのスープが煮えている。" },
-        { "id": "grik_enemy", "name": "族長グリク", "kind": "enemy", "description": "骨の杖を振りかざす老ゴブリン。" },
-        { "id": "goblin_a", "name": "ゴブリンの戦士", "kind": "enemy", "description": "棍棒を持ったゴブリン。" },
-        { "id": "goblin_b", "name": "ゴブリンの戦士", "kind": "enemy", "description": "錆びた短剣を持ったゴブリン。" }
+      "onEnter": [
+        {
+          "op": "advance_clock",
+          "id": "alarm",
+          "amount": 1
+        }
       ],
-      "exits": [{ "to": "upper_gallery", "label": "坑道へ戻る" }]
+      "targets": [
+        {
+          "id": "grik",
+          "name": "族長グリク",
+          "kind": "npc",
+          "entity": "npc_grik",
+          "description": "片目の老ゴブリン。人間の言葉を少し話す。",
+          "visibleWhen": {
+            "not": {
+              "combat": true
+            }
+          }
+        },
+        {
+          "id": "cooking_pot",
+          "name": "煮炊きの鍋",
+          "kind": "object",
+          "description": "ほとんど水だけのスープが煮えている。"
+        },
+        {
+          "id": "grik_enemy",
+          "name": "族長グリク",
+          "kind": "enemy",
+          "description": "骨の杖を振りかざす老ゴブリン。"
+        },
+        {
+          "id": "goblin_a",
+          "name": "ゴブリンの戦士",
+          "kind": "enemy",
+          "description": "棍棒を持ったゴブリン。"
+        },
+        {
+          "id": "goblin_b",
+          "name": "ゴブリンの戦士",
+          "kind": "enemy",
+          "description": "錆びた短剣を持ったゴブリン。"
+        }
+      ],
+      "exits": [
+        {
+          "to": "upper_gallery",
+          "label": "坑道へ戻る"
+        }
+      ]
     }
   ],
   "clues": [
-    { "id": "c_stolen_list", "text": "盗まれたのは食料と毛布、鍋ばかりで、武器や金品は一つも盗まれていない。" },
-    { "id": "c_bran_knows", "text": "ブランによれば、二十年前に鉱山を閉じたのは崩落のせいだけではない。深部で『何か』に鉱夫が襲われたのだという。", "fact": "fact_mine_depths_danger" },
-    { "id": "c_tracks_lead", "text": "足跡の一部は坑口を避けて岩場を回り込んでいる。見張りに見つからない脇道がありそうだ。" },
-    { "id": "c_stolen_tools", "text": "盗品はきちんと分けて保管されている。ゴブリンたちは冬を越すための物資を集めているようだ。" },
-    { "id": "c_claw_marks", "text": "竪穴の縁に、ゴブリンのものではない巨大な爪痕が残っている。深部には何かがいる。", "fact": "fact_mine_depths_danger" },
-    { "id": "c_cold_draft", "text": "竪穴からは冷たい風と、かすかな獣の臭いが上がってくる。" },
-    { "id": "c_starving", "text": "鍋のスープはほとんど水だ。ゴブリンたちは飢えている。" },
-    { "id": "c_goblin_fear", "text": "グリクたちはもともと鉱山の深部に住んでいたが、『大きな爪のもの』に追われて上層へ逃げてきたのだという。", "fact": "fact_goblins_fled_depths" }
+    {
+      "id": "c_stolen_list",
+      "text": "盗まれたのは食料と毛布、鍋ばかりで、武器や金品は一つも盗まれていない。"
+    },
+    {
+      "id": "c_bran_knows",
+      "text": "ブランによれば、二十年前に鉱山を閉じたのは崩落のせいだけではない。深部で『何か』に鉱夫が襲われたのだという。",
+      "fact": "fact_mine_depths_danger"
+    },
+    {
+      "id": "c_tracks_lead",
+      "text": "足跡の一部は坑口を避けて岩場を回り込んでいる。見張りに見つからない脇道がありそうだ。"
+    },
+    {
+      "id": "c_stolen_tools",
+      "text": "盗品はきちんと分けて保管されている。ゴブリンたちは冬を越すための物資を集めているようだ。"
+    },
+    {
+      "id": "c_claw_marks",
+      "text": "竪穴の縁に、ゴブリンのものではない巨大な爪痕が残っている。深部には何かがいる。",
+      "fact": "fact_mine_depths_danger"
+    },
+    {
+      "id": "c_cold_draft",
+      "text": "竪穴からは冷たい風と、かすかな獣の臭いが上がってくる。"
+    },
+    {
+      "id": "c_starving",
+      "text": "鍋のスープはほとんど水だ。ゴブリンたちは飢えている。"
+    },
+    {
+      "id": "c_goblin_fear",
+      "text": "グリクたちはもともと鉱山の深部に住んでいたが、『大きな爪のもの』に追われて上層へ逃げてきたのだという。",
+      "fact": "fact_goblins_fled_depths"
+    }
   ],
   "clocks": [
     {
-      "id": "alarm", "name": "ゴブリンの警戒", "max": 3,
+      "id": "alarm",
+      "name": "ゴブリンの警戒",
+      "max": 3,
       "onFull": [
-        { "op": "set_flag", "id": "alarm_raised" },
-        { "op": "narrate", "text": "甲高い警笛が坑道に響き渡る！ゴブリンの戦士たちが武器を手に飛び出してきた。" },
-        { "op": "start_combat", "enemies": ["goblin_a", "goblin_b"] }
+        {
+          "op": "set_flag",
+          "id": "alarm_raised"
+        },
+        {
+          "op": "narrate",
+          "text": "甲高い警笛が坑道に響き渡る！ゴブリンの戦士たちが武器を手に飛び出してきた。"
+        },
+        {
+          "op": "start_combat",
+          "enemies": [
+            "goblin_a",
+            "goblin_b"
+          ]
+        }
       ]
     }
   ],
   "enemies": [
-    { "id": "sentry", "name": "見張りのゴブリン", "monster": "goblin" },
-    { "id": "goblin_a", "name": "ゴブリンの戦士", "monster": "goblin" },
-    { "id": "goblin_b", "name": "ゴブリンの戦士", "monster": "goblin" },
-    { "id": "grik_enemy", "name": "族長グリク", "monster": "goblin_chief" }
+    {
+      "id": "sentry",
+      "name": "見張りのゴブリン",
+      "monster": "goblin"
+    },
+    {
+      "id": "goblin_a",
+      "name": "ゴブリンの戦士",
+      "monster": "goblin"
+    },
+    {
+      "id": "goblin_b",
+      "name": "ゴブリンの戦士",
+      "monster": "goblin"
+    },
+    {
+      "id": "grik_enemy",
+      "name": "族長グリク",
+      "monster": "goblin_chief"
+    }
   ],
   "triggers": [
-    { "id": "t_marta_brief", "action": "talk", "target": "marta", "once": true, "text": "「被害は食い物と毛布ばかりだ。妙な盗っ人だよ」マルタは鼻を鳴らす。「鉱山のことならブランの爺さんが詳しい。口は悪いがね」", "effects": [{ "op": "set_flag", "id": "briefed" }] },
-    { "id": "t_marta_again", "action": "talk", "target": "marta", "when": { "flag": "briefed" }, "text": "「やり方は任せると言ったろう。ただし村に火の粉が飛ばないようにな」" },
-    { "id": "t_notice", "action": "investigate", "target": "notice_board", "effects": [{ "op": "reveal_clue", "id": "c_stolen_list" }], "text": "被害一覧に目を通す。" },
-    { "id": "t_bran_talk", "action": "talk", "target": "bran", "once": true, "check": { "skill": "persuasion", "difficulty": 12 }, "successText": "ブランはしばらく黙って槌を置いた。「……鉱山を閉じたのは崩落のせいだけじゃねえ。深部で仲間が何かに襲われた。でかい爪の何かにな」彼は棚から古い地図を取り出して寄越した。", "onSuccess": [{ "op": "reveal_clue", "id": "c_bran_knows" }, { "op": "give_item", "item": "mine_map", "qty": 1 }], "failureText": "「忙しいんだ。用がないなら帰れ」ブランは槌を振るい続ける。もう少し話の糸口が必要そうだ。", "onFailure": [{ "op": "set_flag", "id": "bran_annoyed" }] },
-    { "id": "t_bran_pickaxe", "action": "investigate", "target": "old_pickaxe", "once": true, "text": "柄には十人ほどの鉱夫の名前が刻まれ、そのうち三つに線が引かれている。ブランがちらりとこちらを見た。", "effects": [{ "op": "set_flag", "id": "noticed_names" }] },
-    { "id": "t_bran_names", "action": "interact", "target": "bran", "option": "ask_names", "label": "つるはしに刻まれた名前について尋ねる", "when": { "all": [{ "flag": "noticed_names" }, { "not": { "clue": "c_bran_knows" } }] }, "once": true, "text": "ブランは長い溜息をついた。「……あいつらは深部で死んだ。崩落じゃねえ。でかい爪の何かにやられたんだ」そう言って古い地図を押し付けてくる。「持ってけ。二度と仲間を失いたくねえ」", "effects": [{ "op": "reveal_clue", "id": "c_bran_knows" }, { "op": "give_item", "item": "mine_map", "qty": 1 }, { "op": "relation", "npc": "npc_bran", "delta": 5 }] },
-    { "id": "t_tracks", "action": "investigate", "target": "tracks", "once": true, "check": { "skill": "perception", "difficulty": 10 }, "onSuccess": [{ "op": "reveal_clue", "id": "c_tracks_lead" }, { "op": "set_flag", "id": "found_side_path" }], "successText": "足跡の一部が岩場を回り込んでいるのに気づいた。見張りを避けて坑道に入れる脇道がある。", "onFailure": [{ "op": "advance_clock", "id": "alarm", "amount": 1 }], "failureText": "足跡を追って屈み込んだ拍子に小石を蹴飛ばしてしまった。見張りがこちらを振り向く。" },
-    { "id": "t_map_path", "action": "use_item", "item": "mine_map", "nodes": ["mine_entrance"], "once": true, "text": "地図を広げると、坑口の脇に古い換気口が記されていた。見張りに見つからずに坑道へ入れそうだ。", "effects": [{ "op": "set_flag", "id": "found_side_path" }] },
-    { "id": "t_sentry_sneak", "action": "interact", "target": "sentry_post", "option": "sneak_past", "label": "見張りの隙を突いてこっそり通り抜ける", "check": { "skill": "stealth", "difficulty": 12 }, "onSuccess": [{ "op": "set_flag", "id": "sentry_dealt" }], "successText": "見張りが欠伸をした瞬間、あなたは影のように坑口を抜けた。", "onFailure": [{ "op": "advance_clock", "id": "alarm", "amount": 1 }], "failureText": "足音に気づいた見張りが槍を構え、きょろきょろと辺りを見回している。" },
-    { "id": "t_sentry_talk", "action": "talk", "target": "sentry_post", "check": { "skill": "persuasion", "difficulty": 13 }, "onSuccess": [{ "op": "set_flag", "id": "sentry_dealt" }, { "op": "set_flag", "id": "parley_granted" }], "successText": "片言の言葉と身振りで、戦いに来たのではないと伝える。見張りは迷った末、「ゾクチョウ、アウ」と坑道の奥を指した。", "onFailure": [{ "op": "advance_clock", "id": "alarm", "amount": 1 }], "failureText": "見張りは怯えて後ずさり、仲間を呼ぶべきか迷っている。" },
-    { "id": "t_sentry_attack", "action": "interact", "target": "sentry_post", "option": "attack_sentry", "label": "見張りに襲いかかる", "text": "あなたは見張りのゴブリンに斬りかかった！", "effects": [{ "op": "start_combat", "enemies": ["sentry"] }, { "op": "advance_clock", "id": "alarm", "amount": 1 }] },
-    { "id": "t_goods", "action": "investigate", "target": "stolen_goods", "effects": [{ "op": "reveal_clue", "id": "c_stolen_tools" }], "text": "盗品を調べる。" },
-    { "id": "t_shaft_light", "action": "investigate", "target": "dark_shaft", "when": { "flag": "light" }, "once": true, "text": "灯りをかざすと、竪穴の縁がはっきりと見えた。", "effects": [{ "op": "reveal_clue", "id": "c_claw_marks" }] },
-    { "id": "t_shaft", "action": "investigate", "target": "dark_shaft", "when": { "not": { "flag": "light" } }, "once": true, "check": { "skill": "perception", "difficulty": 13 }, "onSuccess": [{ "op": "reveal_clue", "id": "c_claw_marks" }], "successText": "暗がりに目を凝らすと、縁の岩に何かが刻まれているのが見えた。", "onFailure": [{ "op": "reveal_clue", "id": "c_cold_draft" }], "failureText": "暗くてよく見えない。灯りがあれば何か分かるかもしれない。" },
-    { "id": "t_pot", "action": "investigate", "target": "cooking_pot", "effects": [{ "op": "reveal_clue", "id": "c_starving" }], "text": "鍋を覗き込む。" },
-    { "id": "t_feed", "action": "use_item", "item": "rations", "target": "grik", "once": true, "text": "保存食を差し出すと、グリクは驚いたように目を見開き、やがて仲間たちに分け与えた。焚き火の周りの空気が少し和らいだ。", "effects": [{ "op": "take_item", "item": "rations", "qty": 1 }, { "op": "set_flag", "id": "grik_listening" }, { "op": "relation", "npc": "npc_grik", "delta": 10 }] },
-    { "id": "t_grik_parley", "action": "talk", "target": "grik", "when": { "flag": "parley_granted" }, "once": true, "text": "「ミハリ、オマエ、タタカワナイ、イッタ」グリクは杖を下ろした。「ハナス。ナニ、ノゾム」", "effects": [{ "op": "set_flag", "id": "grik_listening" }] },
-    { "id": "t_grik_talk", "action": "talk", "target": "grik", "approach": "friendly", "when": { "not": { "flag": "grik_listening" } }, "check": { "skill": "persuasion", "difficulty": 12 }, "onSuccess": [{ "op": "set_flag", "id": "grik_listening" }], "successText": "グリクはしばらくあなたを見つめ、やがて杖を下ろした。「……ハナス、キク」", "onFailure": [{ "op": "advance_clock", "id": "alarm", "amount": 1 }], "failureText": "グリクは疑わしげに唸り、戦士たちが武器に手をかけた。" },
-    { "id": "t_grik_persuade", "action": "talk", "target": "grik", "approach": "persuade", "when": { "not": { "flag": "grik_listening" } }, "check": { "skill": "persuasion", "difficulty": 12 }, "onSuccess": [{ "op": "set_flag", "id": "grik_listening" }], "successText": "あなたの言葉に、グリクの片目がわずかに揺れた。「……ハナス、キク」", "onFailure": [{ "op": "advance_clock", "id": "alarm", "amount": 1 }], "failureText": "グリクは首を振り、戦士たちがじりじりと間合いを詰める。" },
-    { "id": "t_grik_fear", "action": "talk", "target": "grik", "when": { "flag": "grik_listening" }, "once": true, "check": { "skill": "insight", "difficulty": 10 }, "onSuccess": [{ "op": "reveal_clue", "id": "c_goblin_fear" }], "successText": "盗みの理由を尋ねると、グリクは坑道の奥を指して震えた。「シタ、オオキナ ツメ。ナカマ、タベラレタ。ウエ、ニゲタ。タベモノ、ナイ」", "onFailure": [{ "op": "narrate", "text": "グリクは何かを言いかけて口をつぐんだ。何かを恐れているようだが、まだ信用されていない。" }], "failureText": "核心には触れられなかった。" },
-    { "id": "t_grik_intimidate", "action": "talk", "target": "grik", "approach": "intimidate", "once": true, "check": { "skill": "intimidation", "difficulty": 14 }, "onSuccess": [{ "op": "set_flag", "id": "goblins_cowed" }], "successText": "あなたの剣幕に、ゴブリンたちは震え上がった。グリクは歯噛みしながらも、一族を連れて鉱山を出ていくと約束した。", "onFailure": [{ "op": "start_combat", "enemies": ["goblin_a", "goblin_b"] }], "failureText": "「ニンゲン、ウソツキ！」グリクが杖を振り上げ、戦士たちが襲いかかってきた！" },
-    { "id": "t_relocate", "action": "interact", "target": "grik", "option": "propose_relocation", "label": "森の外れへの移住と、冬を越す食料の手配を提案する", "when": { "all": [{ "flag": "grik_listening" }, { "any": [{ "clue": "c_goblin_fear" }, { "clue": "c_claw_marks" }, { "clue": "c_bran_knows" }] }] }, "once": true, "check": { "skill": "persuasion", "difficulty": 11 }, "onSuccess": [{ "op": "set_flag", "id": "deal_relocate" }], "successText": "深部の脅威を知っていると伝えると、グリクは長い沈黙の末に頷いた。「……モリ、ハズレ、イク。ムラ、モウ、トラナイ」", "onFailure": [{ "op": "relation", "npc": "npc_grik", "delta": -5 }], "failureText": "「ニンゲン、ホントウ、タベモノ、クレル？」グリクはまだ半信半疑だ。もう一押し必要だ。" },
-    { "id": "t_truce", "action": "interact", "target": "grik", "option": "propose_truce", "label": "盗品を返し、村の物を盗まない約束で鉱山に留まることを認める", "when": { "flag": "grik_listening" }, "once": true, "check": { "skill": "insight", "difficulty": 11 }, "onSuccess": [{ "op": "set_flag", "id": "deal_truce" }, { "op": "give_item", "item": "goblin_totem", "qty": 1 }], "successText": "グリクは骨と羽のトーテムを差し出した。「ヤクソク、シルシ」盗品は村へ返されることになった。", "onFailure": [{ "op": "narrate", "text": "グリクは条件を飲み込めずに首を傾げている。言葉を選び直す必要がある。" }], "failureText": "まだ合意には至らない。" },
-    { "id": "t_challenge", "action": "interact", "target": "grik", "option": "challenge_chief", "label": "族長に一騎打ちを挑む", "once": true, "text": "グリクは骨の杖を構えた。「ヨカロウ。ツヨイモノ、ハナシ、キメル」", "effects": [{ "op": "start_combat", "enemies": ["grik_enemy"] }] }
+    {
+      "id": "t_marta_brief",
+      "action": "talk",
+      "target": "marta",
+      "once": true,
+      "text": "「被害は食い物と毛布ばかりだ。妙な盗っ人だよ」マルタは鼻を鳴らす。「鉱山のことならブランの爺さんが詳しい。口は悪いがね」",
+      "effects": [
+        {
+          "op": "set_flag",
+          "id": "briefed"
+        }
+      ]
+    },
+    {
+      "id": "t_notice",
+      "action": "investigate",
+      "target": "notice_board",
+      "effects": [
+        {
+          "op": "reveal_clue",
+          "id": "c_stolen_list"
+        }
+      ],
+      "text": "被害一覧に目を通す。"
+    },
+    {
+      "id": "t_bran_talk",
+      "action": "talk",
+      "target": "bran",
+      "once": true,
+      "check": {
+        "skill": "persuasion",
+        "difficulty": 12
+      },
+      "successText": "ブランはしばらく黙って槌を置いた。「……鉱山を閉じたのは崩落のせいだけじゃねえ。深部で仲間が何かに襲われた。でかい爪の何かにな」彼は棚から古い地図を取り出して寄越した。",
+      "onSuccess": [
+        {
+          "op": "reveal_clue",
+          "id": "c_bran_knows"
+        },
+        {
+          "op": "give_item",
+          "item": "mine_map",
+          "qty": 1
+        }
+      ],
+      "failureText": "「忙しいんだ。用がないなら帰れ」ブランは槌を振るい続ける。もう少し話の糸口が必要そうだ。",
+      "onFailure": [
+        {
+          "op": "set_flag",
+          "id": "bran_annoyed"
+        }
+      ]
+    },
+    {
+      "id": "t_bran_pickaxe",
+      "action": "investigate",
+      "target": "old_pickaxe",
+      "once": true,
+      "text": "柄には十人ほどの鉱夫の名前が刻まれ、そのうち三つに線が引かれている。ブランがちらりとこちらを見た。",
+      "effects": [
+        {
+          "op": "set_flag",
+          "id": "noticed_names"
+        }
+      ]
+    },
+    {
+      "id": "t_bran_names",
+      "action": "interact",
+      "target": "bran",
+      "option": "ask_names",
+      "label": "つるはしに刻まれた名前について尋ねる",
+      "when": {
+        "all": [
+          {
+            "flag": "noticed_names"
+          },
+          {
+            "not": {
+              "clue": "c_bran_knows"
+            }
+          }
+        ]
+      },
+      "once": true,
+      "text": "ブランは長い溜息をついた。「……あいつらは深部で死んだ。崩落じゃねえ。でかい爪の何かにやられたんだ」そう言って古い地図を押し付けてくる。「持ってけ。二度と仲間を失いたくねえ」",
+      "effects": [
+        {
+          "op": "reveal_clue",
+          "id": "c_bran_knows"
+        },
+        {
+          "op": "give_item",
+          "item": "mine_map",
+          "qty": 1
+        },
+        {
+          "op": "relation",
+          "npc": "npc_bran",
+          "delta": 5
+        }
+      ]
+    },
+    {
+      "id": "t_tracks",
+      "action": "investigate",
+      "target": "tracks",
+      "once": true,
+      "check": {
+        "skill": "perception",
+        "difficulty": 10
+      },
+      "onSuccess": [
+        {
+          "op": "reveal_clue",
+          "id": "c_tracks_lead"
+        },
+        {
+          "op": "set_flag",
+          "id": "found_side_path"
+        }
+      ],
+      "successText": "足跡の一部が岩場を回り込んでいるのに気づいた。見張りを避けて坑道に入れる脇道がある。",
+      "onFailure": [
+        {
+          "op": "advance_clock",
+          "id": "alarm",
+          "amount": 1
+        }
+      ],
+      "failureText": "足跡を追って屈み込んだ拍子に小石を蹴飛ばしてしまった。見張りがこちらを振り向く。"
+    },
+    {
+      "id": "t_map_path",
+      "action": "use_item",
+      "item": "mine_map",
+      "nodes": [
+        "mine_entrance"
+      ],
+      "once": true,
+      "text": "地図を広げると、坑口の脇に古い換気口が記されていた。見張りに見つからずに坑道へ入れそうだ。",
+      "effects": [
+        {
+          "op": "set_flag",
+          "id": "found_side_path"
+        }
+      ]
+    },
+    {
+      "id": "t_sentry_talk",
+      "action": "talk",
+      "target": "sentry_post",
+      "check": {
+        "skill": "persuasion",
+        "difficulty": 13
+      },
+      "onSuccess": [
+        {
+          "op": "set_flag",
+          "id": "sentry_dealt"
+        },
+        {
+          "op": "set_flag",
+          "id": "parley_granted"
+        }
+      ],
+      "successText": "片言の言葉と身振りで、戦いに来たのではないと伝える。見張りは迷った末、「ゾクチョウ、アウ」と坑道の奥を指した。",
+      "onFailure": [
+        {
+          "op": "advance_clock",
+          "id": "alarm",
+          "amount": 1
+        }
+      ],
+      "failureText": "見張りは怯えて後ずさり、仲間を呼ぶべきか迷っている。"
+    },
+    {
+      "id": "t_sentry_attack",
+      "action": "interact",
+      "target": "sentry_post",
+      "option": "attack_sentry",
+      "label": "見張りに襲いかかる",
+      "text": "あなたは見張りのゴブリンに斬りかかった！",
+      "effects": [
+        {
+          "op": "start_combat",
+          "enemies": [
+            "sentry"
+          ]
+        },
+        {
+          "op": "advance_clock",
+          "id": "alarm",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "id": "t_goods",
+      "action": "investigate",
+      "target": "stolen_goods",
+      "effects": [
+        {
+          "op": "reveal_clue",
+          "id": "c_stolen_tools"
+        }
+      ],
+      "text": "盗品を調べる。"
+    },
+    {
+      "id": "t_shaft_light",
+      "action": "investigate",
+      "target": "dark_shaft",
+      "when": {
+        "flag": "light"
+      },
+      "once": true,
+      "text": "灯りをかざすと、竪穴の縁がはっきりと見えた。",
+      "effects": [
+        {
+          "op": "reveal_clue",
+          "id": "c_claw_marks"
+        }
+      ]
+    },
+    {
+      "id": "t_shaft",
+      "action": "investigate",
+      "target": "dark_shaft",
+      "when": {
+        "not": {
+          "flag": "light"
+        }
+      },
+      "once": true,
+      "check": {
+        "skill": "perception",
+        "difficulty": 13
+      },
+      "onSuccess": [
+        {
+          "op": "reveal_clue",
+          "id": "c_claw_marks"
+        }
+      ],
+      "successText": "暗がりに目を凝らすと、縁の岩に何かが刻まれているのが見えた。",
+      "onFailure": [
+        {
+          "op": "reveal_clue",
+          "id": "c_cold_draft"
+        }
+      ],
+      "failureText": "暗くてよく見えない。灯りがあれば何か分かるかもしれない。"
+    },
+    {
+      "id": "t_pot",
+      "action": "investigate",
+      "target": "cooking_pot",
+      "effects": [
+        {
+          "op": "reveal_clue",
+          "id": "c_starving"
+        }
+      ],
+      "text": "鍋を覗き込む。"
+    },
+    {
+      "id": "t_feed",
+      "action": "use_item",
+      "item": "rations",
+      "target": "grik",
+      "once": true,
+      "text": "保存食を差し出すと、グリクは驚いたように目を見開き、やがて仲間たちに分け与えた。焚き火の周りの空気が少し和らいだ。",
+      "effects": [
+        {
+          "op": "take_item",
+          "item": "rations",
+          "qty": 1
+        },
+        {
+          "op": "set_flag",
+          "id": "grik_listening"
+        },
+        {
+          "op": "relation",
+          "npc": "npc_grik",
+          "delta": 10
+        }
+      ]
+    },
+    {
+      "id": "t_grik_parley",
+      "action": "talk",
+      "target": "grik",
+      "when": {
+        "flag": "parley_granted"
+      },
+      "once": true,
+      "text": "「ミハリ、オマエ、タタカワナイ、イッタ」グリクは杖を下ろした。「ハナス。ナニ、ノゾム」",
+      "effects": [
+        {
+          "op": "set_flag",
+          "id": "grik_listening"
+        }
+      ]
+    },
+    {
+      "id": "t_grik_talk",
+      "action": "talk",
+      "target": "grik",
+      "approach": "friendly",
+      "when": {
+        "not": {
+          "flag": "grik_listening"
+        }
+      },
+      "check": {
+        "skill": "persuasion",
+        "difficulty": 12
+      },
+      "onSuccess": [
+        {
+          "op": "set_flag",
+          "id": "grik_listening"
+        }
+      ],
+      "successText": "グリクはしばらくあなたを見つめ、やがて杖を下ろした。「……ハナス、キク」",
+      "onFailure": [
+        {
+          "op": "advance_clock",
+          "id": "alarm",
+          "amount": 1
+        }
+      ],
+      "failureText": "グリクは疑わしげに唸り、戦士たちが武器に手をかけた。"
+    },
+    {
+      "id": "t_grik_persuade",
+      "action": "talk",
+      "target": "grik",
+      "approach": "persuade",
+      "when": {
+        "not": {
+          "flag": "grik_listening"
+        }
+      },
+      "check": {
+        "skill": "persuasion",
+        "difficulty": 12
+      },
+      "onSuccess": [
+        {
+          "op": "set_flag",
+          "id": "grik_listening"
+        }
+      ],
+      "successText": "あなたの言葉に、グリクの片目がわずかに揺れた。「……ハナス、キク」",
+      "onFailure": [
+        {
+          "op": "advance_clock",
+          "id": "alarm",
+          "amount": 1
+        }
+      ],
+      "failureText": "グリクは首を振り、戦士たちがじりじりと間合いを詰める。"
+    },
+    {
+      "id": "t_grik_fear",
+      "action": "talk",
+      "target": "grik",
+      "when": {
+        "flag": "grik_listening"
+      },
+      "once": true,
+      "check": {
+        "skill": "insight",
+        "difficulty": 10
+      },
+      "onSuccess": [
+        {
+          "op": "reveal_clue",
+          "id": "c_goblin_fear"
+        }
+      ],
+      "successText": "盗みの理由を尋ねると、グリクは坑道の奥を指して震えた。「シタ、オオキナ ツメ。ナカマ、タベラレタ。ウエ、ニゲタ。タベモノ、ナイ」",
+      "onFailure": [
+        {
+          "op": "narrate",
+          "text": "グリクは何かを言いかけて口をつぐんだ。何かを恐れているようだが、まだ信用されていない。"
+        }
+      ],
+      "failureText": "核心には触れられなかった。"
+    },
+    {
+      "id": "t_grik_intimidate",
+      "action": "talk",
+      "target": "grik",
+      "approach": "intimidate",
+      "once": true,
+      "check": {
+        "skill": "intimidation",
+        "difficulty": 14
+      },
+      "onSuccess": [
+        {
+          "op": "set_flag",
+          "id": "goblins_cowed"
+        }
+      ],
+      "successText": "あなたの剣幕に、ゴブリンたちは震え上がった。グリクは歯噛みしながらも、一族を連れて鉱山を出ていくと約束した。",
+      "onFailure": [
+        {
+          "op": "start_combat",
+          "enemies": [
+            "goblin_a",
+            "goblin_b"
+          ]
+        }
+      ],
+      "failureText": "「ニンゲン、ウソツキ！」グリクが杖を振り上げ、戦士たちが襲いかかってきた！"
+    },
+    {
+      "id": "t_relocate",
+      "action": "interact",
+      "target": "grik",
+      "option": "propose_relocation",
+      "label": "森の外れへの移住と、冬を越す食料の手配を提案する",
+      "when": {
+        "all": [
+          {
+            "flag": "grik_listening"
+          },
+          {
+            "any": [
+              {
+                "clue": "c_goblin_fear"
+              },
+              {
+                "clue": "c_claw_marks"
+              },
+              {
+                "clue": "c_bran_knows"
+              }
+            ]
+          }
+        ]
+      },
+      "once": true,
+      "check": {
+        "skill": "persuasion",
+        "difficulty": 11
+      },
+      "onSuccess": [
+        {
+          "op": "set_flag",
+          "id": "deal_relocate"
+        }
+      ],
+      "successText": "深部の脅威を知っていると伝えると、グリクは長い沈黙の末に頷いた。「……モリ、ハズレ、イク。ムラ、モウ、トラナイ」",
+      "onFailure": [
+        {
+          "op": "relation",
+          "npc": "npc_grik",
+          "delta": -5
+        }
+      ],
+      "failureText": "「ニンゲン、ホントウ、タベモノ、クレル？」グリクはまだ半信半疑だ。もう一押し必要だ。"
+    },
+    {
+      "id": "t_truce",
+      "action": "interact",
+      "target": "grik",
+      "option": "propose_truce",
+      "label": "盗品を返し、村の物を盗まない約束で鉱山に留まることを認める",
+      "when": {
+        "flag": "grik_listening"
+      },
+      "once": true,
+      "check": {
+        "skill": "insight",
+        "difficulty": 11
+      },
+      "onSuccess": [
+        {
+          "op": "set_flag",
+          "id": "deal_truce"
+        },
+        {
+          "op": "give_item",
+          "item": "goblin_totem",
+          "qty": 1
+        }
+      ],
+      "successText": "グリクは骨と羽のトーテムを差し出した。「ヤクソク、シルシ」盗品は村へ返されることになった。",
+      "onFailure": [
+        {
+          "op": "narrate",
+          "text": "グリクは条件を飲み込めずに首を傾げている。言葉を選び直す必要がある。"
+        }
+      ],
+      "failureText": "まだ合意には至らない。"
+    },
+    {
+      "id": "t_challenge",
+      "action": "interact",
+      "target": "grik",
+      "option": "challenge_chief",
+      "label": "族長に一騎打ちを挑む",
+      "once": true,
+      "text": "グリクは骨の杖を構えた。「ヨカロウ。ツヨイモノ、ハナシ、キメル」",
+      "effects": [
+        {
+          "op": "start_combat",
+          "enemies": [
+            "grik_enemy"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "t_sentry_bypass",
+      "action": "attempt",
+      "target": "sentry_post",
+      "gmHint": "見張りをやり過ごす・騙す・気を逸らす・岩場をよじ登って回り込む",
+      "accepts": [
+        {
+          "skill": "stealth",
+          "difficulty": 12
+        },
+        {
+          "skill": "deception",
+          "difficulty": 12
+        },
+        {
+          "skill": "acrobatics",
+          "difficulty": 13
+        },
+        {
+          "skill": "athletics",
+          "difficulty": 14
+        }
+      ],
+      "onSuccess": [
+        {
+          "op": "set_flag",
+          "id": "sentry_dealt"
+        }
+      ],
+      "successText": "見張りの注意が逸れた一瞬を突き、あなたは坑口の内側へ滑り込んだ。",
+      "onFailure": [
+        {
+          "op": "advance_clock",
+          "id": "alarm",
+          "amount": 1
+        }
+      ],
+      "failureText": "見張りがびくりと顔を上げ、槍を構えてきょろきょろと辺りを見回している。"
+    },
+    {
+      "id": "t_sentry_scare",
+      "action": "talk",
+      "target": "sentry_post",
+      "approach": "intimidate",
+      "check": {
+        "skill": "intimidation",
+        "difficulty": 11
+      },
+      "onSuccess": [
+        {
+          "op": "set_flag",
+          "id": "sentry_dealt"
+        },
+        {
+          "op": "advance_clock",
+          "id": "alarm",
+          "amount": 1
+        }
+      ],
+      "successText": "一喝すると、見張りは槍を放り出して坑道の奥へ逃げていった。……仲間に知らせに行ったかもしれない。",
+      "onFailure": [
+        {
+          "op": "advance_clock",
+          "id": "alarm",
+          "amount": 2
+        }
+      ],
+      "failureText": "見張りは甲高い声で叫んだ。坑道の奥がざわめく。"
+    },
+    {
+      "id": "t_sentry_food",
+      "action": "use_item",
+      "item": "rations",
+      "target": "sentry_post",
+      "once": true,
+      "text": "干し肉を差し出すと、見張りは目を丸くし、夢中でかぶりついた。食べ終えると、恥ずかしそうに坑道の奥を指さした。「ゾクチョウ、アウ？」",
+      "effects": [
+        {
+          "op": "take_item",
+          "item": "rations",
+          "qty": 1
+        },
+        {
+          "op": "set_flag",
+          "id": "sentry_dealt"
+        },
+        {
+          "op": "set_flag",
+          "id": "parley_granted"
+        }
+      ]
+    },
+    {
+      "id": "t_shaft_climb",
+      "action": "attempt",
+      "target": "dark_shaft",
+      "once": true,
+      "gmHint": "竪穴の縁から身を乗り出す・ロープで少し降りてみる",
+      "accepts": [
+        {
+          "skill": "athletics",
+          "difficulty": 12
+        },
+        {
+          "skill": "acrobatics",
+          "difficulty": 12
+        }
+      ],
+      "onSuccess": [
+        {
+          "op": "reveal_clue",
+          "id": "c_claw_marks"
+        }
+      ],
+      "successText": "縁を伝って少し降りると、岩壁に深々と刻まれた爪痕が目の前にあった。",
+      "onFailure": [
+        {
+          "op": "damage",
+          "amount": "1d4"
+        },
+        {
+          "op": "reveal_clue",
+          "id": "c_cold_draft"
+        }
+      ],
+      "failureText": "足を滑らせ、岩壁に体を打ちつけた。下からは冷たい風と獣の臭いが上がってくる。"
+    },
+    {
+      "id": "t_pot_help",
+      "action": "attempt",
+      "target": "cooking_pot",
+      "once": true,
+      "gmHint": "鍋に手を加える・料理を手伝う・薬草や食料を足す",
+      "accepts": [
+        {
+          "skill": "medicine",
+          "difficulty": 10
+        },
+        {
+          "skill": "lore",
+          "difficulty": 11
+        },
+        {
+          "skill": "persuasion",
+          "difficulty": 13
+        }
+      ],
+      "onSuccess": [
+        {
+          "op": "set_flag",
+          "id": "grik_listening"
+        },
+        {
+          "op": "relation",
+          "npc": "npc_grik",
+          "delta": 8
+        },
+        {
+          "op": "reveal_clue",
+          "id": "c_starving"
+        }
+      ],
+      "successText": "鍋に手を加えると、薄いスープから香りが立ち上った。ゴブリンたちが恐る恐る近寄ってくる。グリクが杖を下ろした。「……オマエ、ナニモノ」",
+      "onFailure": [
+        {
+          "op": "advance_clock",
+          "id": "alarm",
+          "amount": 1
+        }
+      ],
+      "failureText": "鍋に近づいた途端、ゴブリンたちが一斉に色めき立った。食べ物を奪いに来たと思われたようだ。"
+    },
+    {
+      "id": "t_grik_bargain",
+      "action": "attempt",
+      "target": "grik",
+      "once": true,
+      "when": {
+        "all": [
+          {
+            "flag": "grik_listening"
+          },
+          {
+            "not": {
+              "any": [
+                {
+                  "flag": "deal_relocate"
+                },
+                {
+                  "flag": "deal_truce"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "gmHint": "独自の取引や約束を持ちかける（交易、仕事の斡旋、深部の脅威への共闘など）",
+      "accepts": [
+        {
+          "skill": "persuasion",
+          "difficulty": 12
+        },
+        {
+          "skill": "insight",
+          "difficulty": 12
+        },
+        {
+          "skill": "deception",
+          "difficulty": 14
+        }
+      ],
+      "onSuccess": [
+        {
+          "op": "set_flag",
+          "id": "deal_truce"
+        },
+        {
+          "op": "give_item",
+          "item": "goblin_totem",
+          "qty": 1
+        }
+      ],
+      "successText": "グリクは長いあいだ考え込み、やがて骨と羽のトーテムを差し出した。「ヤクソク、シルシ。ムラ、トラナイ」",
+      "onFailure": [
+        {
+          "op": "relation",
+          "npc": "npc_grik",
+          "delta": -3
+        }
+      ],
+      "failureText": "グリクは首を傾げた。話がまだうまく伝わっていない。言い方を変えるか、彼らが何を恐れているのかを知る必要がありそうだ。"
+    }
   ],
   "resolutions": [
-    { "id": "r_relocated", "when": { "flag": "deal_relocate" }, "outcome": "success", "title": "森の外れの新しい集落", "epilogue": "ゴブリンたちは荷物をまとめ、村が用意した食料を抱えて森の外れへ移っていった。マルタは「一番手間のかかるやり方を選んだな」と笑い、報酬を弾んだ。鉱山の深部に潜む何かの噂が、村に静かに広まり始めている。", "rewards": { "xp": 60, "gold": 30, "items": ["guild_badge"] }, "worldEffects": [{ "op": "set_fact", "fact": "fact_goblins_relocated" }, { "op": "set_fact", "fact": "fact_mine_depths_danger" }] },
-    { "id": "r_truce", "when": { "flag": "deal_truce" }, "outcome": "success", "title": "鉱山の境界", "epilogue": "盗品は村へ戻り、ゴブリンたちは鉱山の上層に留まることになった。境界の岩にはトーテムが掲げられ、村人たちは半信半疑ながらもそれを受け入れた。", "rewards": { "xp": 50, "gold": 20, "items": [] }, "worldEffects": [{ "op": "set_fact", "fact": "fact_goblin_truce" }] },
-    { "id": "r_cowed", "when": { "flag": "goblins_cowed" }, "outcome": "success", "title": "逃げ去った小鬼たち", "epilogue": "ゴブリンたちは怯えたまま鉱山を去った。村の盗みは止んだが、彼らがどこへ向かったのか知る者はいない。", "rewards": { "xp": 40, "gold": 20, "items": [] }, "worldEffects": [{ "op": "set_fact", "fact": "fact_goblins_driven_out" }] },
-    { "id": "r_victory", "when": { "defeated": "grik_enemy" }, "outcome": "success", "title": "族長の敗北", "epilogue": "族長グリクは倒れ、残されたゴブリンたちは散り散りに逃げ去った。焚き火の跡に残された水のようなスープだけが、彼らの冬の厳しさを物語っていた。", "rewards": { "xp": 50, "gold": 25, "items": ["goblin_totem"] }, "worldEffects": [{ "op": "set_fact", "fact": "fact_goblins_driven_out" }] },
-    { "id": "r_withdraw", "when": { "flag": "withdrawn" }, "outcome": "withdrawn", "title": "撤退", "epilogue": "あなたは一度村へ引き返すことにした。ゴブリンの問題は、まだ片付いていない。", "rewards": { "xp": 5, "gold": 0, "items": [] } },
-    { "id": "r_timeout", "when": { "flag": "timeout" }, "outcome": "partial", "title": "日暮れ", "epilogue": "日が暮れ、坑道は闇に沈んだ。あなたは得た情報を持ち帰り、マルタに報告した。決着は別の日に持ち越される。", "rewards": { "xp": 15, "gold": 0, "items": [] } },
-    { "id": "r_down", "when": { "flag": "down" }, "outcome": "failure", "title": "担ぎ込まれた冒険者", "epilogue": "気がつくと、あなたは宿屋のベッドの上にいた。衛兵ロルフが坑道の入口で倒れていたあなたを見つけ、担いで戻ってくれたのだという。", "rewards": { "xp": 10, "gold": 0, "items": [] } },
-    { "id": "r_dep_lost", "when": { "flag": "dependency_lost" }, "outcome": "partial", "title": "状況の変化", "epilogue": "鉱山を取り巻く状況が変わり、依頼はひとまず打ち切られた。これまでの調査は無駄にはならない。", "rewards": { "xp": 15, "gold": 5, "items": [] } }
+    {
+      "id": "r_relocated",
+      "when": {
+        "flag": "deal_relocate"
+      },
+      "outcome": "success",
+      "title": "森の外れの新しい集落",
+      "epilogue": "ゴブリンたちは荷物をまとめ、村が用意した食料を抱えて森の外れへ移っていった。マルタは「一番手間のかかるやり方を選んだな」と笑い、報酬を弾んだ。鉱山の深部に潜む何かの噂が、村に静かに広まり始めている。",
+      "rewards": {
+        "xp": 60,
+        "gold": 30,
+        "items": [
+          "guild_badge"
+        ]
+      },
+      "worldEffects": [
+        {
+          "op": "set_fact",
+          "fact": "fact_goblins_relocated"
+        },
+        {
+          "op": "set_fact",
+          "fact": "fact_mine_depths_danger"
+        }
+      ]
+    },
+    {
+      "id": "r_truce",
+      "when": {
+        "flag": "deal_truce"
+      },
+      "outcome": "success",
+      "title": "鉱山の境界",
+      "epilogue": "盗品は村へ戻り、ゴブリンたちは鉱山の上層に留まることになった。境界の岩にはトーテムが掲げられ、村人たちは半信半疑ながらもそれを受け入れた。",
+      "rewards": {
+        "xp": 50,
+        "gold": 20,
+        "items": []
+      },
+      "worldEffects": [
+        {
+          "op": "set_fact",
+          "fact": "fact_goblin_truce"
+        }
+      ]
+    },
+    {
+      "id": "r_cowed",
+      "when": {
+        "flag": "goblins_cowed"
+      },
+      "outcome": "success",
+      "title": "逃げ去った小鬼たち",
+      "epilogue": "ゴブリンたちは怯えたまま鉱山を去った。村の盗みは止んだが、彼らがどこへ向かったのか知る者はいない。",
+      "rewards": {
+        "xp": 40,
+        "gold": 20,
+        "items": []
+      },
+      "worldEffects": [
+        {
+          "op": "set_fact",
+          "fact": "fact_goblins_driven_out"
+        }
+      ]
+    },
+    {
+      "id": "r_victory",
+      "when": {
+        "defeated": "grik_enemy"
+      },
+      "outcome": "success",
+      "title": "族長の敗北",
+      "epilogue": "族長グリクは倒れ、残されたゴブリンたちは散り散りに逃げ去った。焚き火の跡に残された水のようなスープだけが、彼らの冬の厳しさを物語っていた。",
+      "rewards": {
+        "xp": 50,
+        "gold": 25,
+        "items": [
+          "goblin_totem"
+        ]
+      },
+      "worldEffects": [
+        {
+          "op": "set_fact",
+          "fact": "fact_goblins_driven_out"
+        }
+      ]
+    },
+    {
+      "id": "r_withdraw",
+      "when": {
+        "flag": "withdrawn"
+      },
+      "outcome": "withdrawn",
+      "title": "撤退",
+      "epilogue": "あなたは一度村へ引き返すことにした。ゴブリンの問題は、まだ片付いていない。",
+      "rewards": {
+        "xp": 5,
+        "gold": 0,
+        "items": []
+      }
+    },
+    {
+      "id": "r_timeout",
+      "when": {
+        "flag": "timeout"
+      },
+      "outcome": "partial",
+      "title": "日暮れ",
+      "epilogue": "日が暮れ、坑道は闇に沈んだ。あなたは得た情報を持ち帰り、マルタに報告した。決着は別の日に持ち越される。",
+      "rewards": {
+        "xp": 15,
+        "gold": 0,
+        "items": []
+      }
+    },
+    {
+      "id": "r_down",
+      "when": {
+        "flag": "down"
+      },
+      "outcome": "failure",
+      "title": "担ぎ込まれた冒険者",
+      "epilogue": "気がつくと、あなたは宿屋のベッドの上にいた。衛兵ロルフが坑道の入口で倒れていたあなたを見つけ、担いで戻ってくれたのだという。",
+      "rewards": {
+        "xp": 10,
+        "gold": 0,
+        "items": []
+      }
+    },
+    {
+      "id": "r_dep_lost",
+      "when": {
+        "flag": "dependency_lost"
+      },
+      "outcome": "partial",
+      "title": "状況の変化",
+      "epilogue": "鉱山を取り巻く状況が変わり、依頼はひとまず打ち切られた。これまでの調査は無駄にはならない。",
+      "rewards": {
+        "xp": 15,
+        "gold": 5,
+        "items": []
+      }
+    }
   ],
   "fallbackPolicy": [
-    { "when": "turn_limit", "mode": "conclude", "resolution": "r_timeout" },
-    { "when": "character_down", "mode": "conclude", "resolution": "r_down" },
-    { "when": "dependency_lost", "mode": "conclude", "resolution": "r_dep_lost", "followup": "daily_request" }
+    {
+      "when": "turn_limit",
+      "mode": "conclude",
+      "resolution": "r_timeout"
+    },
+    {
+      "when": "character_down",
+      "mode": "conclude",
+      "resolution": "r_down"
+    },
+    {
+      "when": "dependency_lost",
+      "mode": "conclude",
+      "resolution": "r_dep_lost",
+      "followup": "daily_request"
+    }
   ],
-  "impactLimits": { "maxXp": 60, "maxGold": 30 }
+  "impactLimits": {
+    "maxXp": 60,
+    "maxGold": 30
+  },
+  "hints": [
+    {
+      "id": "h_bran",
+      "text": "マルタが鍛冶屋の方角を顎で示す。鉱山時代を知る者に話を聞くのも手かもしれない。",
+      "when": {
+        "node": "guild"
+      },
+      "until": {
+        "any": [
+          {
+            "clue": "c_bran_knows"
+          },
+          {
+            "flag": "briefed"
+          }
+        ]
+      }
+    },
+    {
+      "id": "h_pickaxe",
+      "text": "ブランは時々、壁の古いつるはしに目をやっては黙り込む。",
+      "when": {
+        "node": "smithy"
+      },
+      "until": {
+        "clue": "c_bran_knows"
+      }
+    },
+    {
+      "id": "h_sentry",
+      "text": "見張りは眠たげで、腹の虫を鳴らしている。岩場の方にも小さな足跡が続いているようだ。",
+      "when": {
+        "node": "mine_entrance"
+      },
+      "until": {
+        "any": [
+          {
+            "flag": "sentry_dealt"
+          },
+          {
+            "flag": "found_side_path"
+          },
+          {
+            "defeated": "sentry"
+          }
+        ]
+      }
+    },
+    {
+      "id": "h_shaft",
+      "text": "竪穴から吹き上がる風が冷たい。奥の暗がりから、かすかに獣の臭いがする。",
+      "when": {
+        "node": "upper_gallery"
+      },
+      "until": {
+        "clue": "c_claw_marks"
+      }
+    },
+    {
+      "id": "h_camp",
+      "text": "ゴブリンたちは痩せこけ、武器よりも鍋の方ばかり見ている。",
+      "when": {
+        "node": "goblin_camp"
+      },
+      "until": {
+        "flag": "grik_listening"
+      }
+    },
+    {
+      "id": "h_deal",
+      "text": "グリクは話しながら、何度も坑道の奥を振り返る。ここに留まることを恐れているようだ。",
+      "when": {
+        "flag": "grik_listening"
+      },
+      "until": {
+        "any": [
+          {
+            "flag": "deal_relocate"
+          },
+          {
+            "flag": "deal_truce"
+          },
+          {
+            "flag": "goblins_cowed"
+          }
+        ]
+      }
+    }
+  ]
 }

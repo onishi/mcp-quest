@@ -23,21 +23,21 @@ export const locations: LocationDef[] = [
 ];
 
 export const npcs: NpcDef[] = [
-  { id: "npc_elena", name: "薬師エレナ", role: "薬師", location: "loc_apothecary", publicProfile: "村の医療を一手に担う物静かな薬師。", goals: ["病の娘リラを救う"], fears: ["禁術の研究が露見すること"], secrets: ["禁じられた魔法を研究している"] },
-  { id: "npc_lila", name: "リラ", role: "エレナの娘", location: "loc_apothecary", publicProfile: "病弱だが好奇心旺盛な少女。", goals: ["外の世界を見る"], fears: ["母を困らせること"], secrets: [] },
-  { id: "npc_gord", name: "ゴルド", role: "酒場の主人", location: "loc_tavern", publicProfile: "眠れる竜亭の主人。寡黙で、誰も座らない席に毎晩酒を置く。", goals: ["友との約束を果たす"], fears: ["忘れられること"], secrets: ["三十年前、友を森に置いて逃げた"] },
-  { id: "npc_marta", name: "マルタ", role: "ギルド支部長", location: "loc_guild", publicProfile: "元冒険者の豪快な支部長。依頼の采配を担う。", goals: ["村の安全と支部の存続"], fears: ["支部の閉鎖"], secrets: [] },
-  { id: "npc_bran", name: "ブラン", role: "鍛冶師（ドワーフ）", location: "loc_smithy", publicProfile: "腕は確かだが口が悪いドワーフの鍛冶師。", goals: ["旧鉱山の銀で名剣を打つ"], fears: [], secrets: ["鉱山閉鎖の真相を知っている"] },
-  { id: "npc_father_alan", name: "神官アラン", role: "神官", location: "loc_chapel", publicProfile: "禁術の取締りも担う温厚な神官。", goals: ["鐘を再び鳴らす"], fears: ["信仰の衰え"], secrets: ["エレナに命を救われた恩がある"] },
-  { id: "npc_tobi", name: "トビ", role: "薬草採りの少年", location: "loc_apothecary", publicProfile: "エレナの手伝いをする元気な少年。", goals: ["一人前の薬草採りになる"], fears: ["暗い場所"], secrets: [] },
-  { id: "npc_hilda", name: "ヒルダ", role: "宿屋の女将", location: "loc_inn", publicProfile: "村一番の情報通。", goals: ["宿の繁盛"], fears: [], secrets: [] },
-  { id: "npc_old_wen", name: "長老ウェン", role: "村長", location: "loc_riefen", publicProfile: "村の古い伝承に詳しい長老。", goals: ["村を守る"], fears: ["遺跡の封印が解かれること"], secrets: [] },
-  { id: "npc_kass", name: "カス", role: "行商人", location: "loc_highway", publicProfile: "口のうまい行商人。品揃えは日によって違う。", goals: ["一山当てる"], fears: ["盗賊"], secrets: [] },
-  { id: "npc_selphine", name: "セルフィーネ", role: "エルフの狩人", location: "loc_spirit_forest", publicProfile: "森に住むエルフの狩人。人間とは距離を置く。", goals: ["森の均衡を守る"], fears: [], secrets: [] },
-  { id: "npc_grik", name: "グリク", role: "ゴブリンの族長", location: "loc_old_mine", publicProfile: "旧鉱山に住み着いたゴブリンたちの族長。", goals: ["一族が冬を越す"], fears: ["地下深くの何か"], secrets: ["地下の坑道から追われて鉱山上層に来た"] },
-  { id: "npc_mira", name: "ミラ", role: "元鉱夫", location: "loc_riefen", publicProfile: "鉱山の再開を願う元鉱夫。", goals: ["鉱山の再開"], fears: [], secrets: [] },
-  { id: "npc_rolf", name: "ロルフ", role: "衛兵", location: "loc_square", publicProfile: "村でただ一人の衛兵。真面目だが心配性。", goals: ["村の治安"], fears: ["ゴブリンの襲撃"], secrets: [] },
-  { id: "npc_old_spirit", name: "老いた精霊", role: "森の精霊", location: "loc_spirit_forest", publicProfile: "伝承に語られる森の精霊。", goals: ["約束を伝える"], fears: ["消えること"], secrets: [] },
+  { id: "npc_elena", manner: "静かで丁寧な口調。疲れが滲み、時々言葉を選ぶように黙る。", rumors: ["最近は夜遅くまで薬の調合をしている", "森の薬草は春より秋の方が効き目が強い"], name: "薬師エレナ", role: "薬師", location: "loc_apothecary", publicProfile: "村の医療を一手に担う物静かな薬師。", goals: ["病の娘リラを救う"], fears: ["禁術の研究が露見すること"], secrets: ["禁じられた魔法を研究している"] },
+  { id: "npc_lila", manner: "人懐っこく、思ったことをすぐ口にする。咳き込むことがある。", rumors: ["トビは森のことなら何でも知っている", "王都には空飛ぶ船があるって本当？"], name: "リラ", role: "エレナの娘", location: "loc_apothecary", publicProfile: "病弱だが好奇心旺盛な少女。", goals: ["外の世界を見る"], fears: ["母を困らせること"], secrets: [] },
+  { id: "npc_gord", manner: "寡黙でぶっきらぼう。短い言葉で話すが、客への気配りは細やか。", rumors: ["今年の麦酒は出来がいい", "森の奥には夜、行くもんじゃない"], name: "ゴルド", role: "酒場の主人", location: "loc_tavern", publicProfile: "眠れる竜亭の主人。寡黙で、誰も座らない席に毎晩酒を置く。", goals: ["友との約束を果たす"], fears: ["忘れられること"], secrets: ["三十年前、友を森に置いて逃げた"] },
+  { id: "npc_marta", manner: "豪快で歯切れがいい。冒険者を「若いの」と呼ぶ。", rumors: ["ギルドの依頼は減る一方だ", "王都の本部はこの支部を閉めたがっている"], name: "マルタ", role: "ギルド支部長", location: "loc_guild", publicProfile: "元冒険者の豪快な支部長。依頼の采配を担う。", goals: ["村の安全と支部の存続"], fears: ["支部の閉鎖"], secrets: [] },
+  { id: "npc_bran", manner: "口が悪く、ドワーフ訛り。職人の話になると饒舌。", rumors: ["いい鉄は嘘をつかねえ", "旧鉱山の銀は王国一だった"], name: "ブラン", role: "鍛冶師（ドワーフ）", location: "loc_smithy", publicProfile: "腕は確かだが口が悪いドワーフの鍛冶師。", goals: ["旧鉱山の銀で名剣を打つ"], fears: [], secrets: ["鉱山閉鎖の真相を知っている"] },
+  { id: "npc_father_alan", manner: "穏やかで丁寧。説教くさくならないよう気をつけている。", rumors: ["教会の鐘は十年鳴っていない", "光の神は迷える者を見捨てない"], name: "神官アラン", role: "神官", location: "loc_chapel", publicProfile: "禁術の取締りも担う温厚な神官。", goals: ["鐘を再び鳴らす"], fears: ["信仰の衰え"], secrets: ["エレナに命を救われた恩がある"] },
+  { id: "npc_tobi", manner: "元気で早口。褒められると照れる。", rumors: ["月光草は月の夜に光るんだ", "森のエルフは怖いけど、本当は優しいと思う"], name: "トビ", role: "薬草採りの少年", location: "loc_apothecary", publicProfile: "エレナの手伝いをする元気な少年。", goals: ["一人前の薬草採りになる"], fears: ["暗い場所"], secrets: [] },
+  { id: "npc_hilda", manner: "噂好きで声を潜めるのが癖。話が長い。", rumors: ["ゴルドの酒場の隅の席には誰も座らない", "行商人のカスはまた値上げした"], name: "ヒルダ", role: "宿屋の女将", location: "loc_inn", publicProfile: "村一番の情報通。", goals: ["宿の繁盛"], fears: [], secrets: [] },
+  { id: "npc_old_wen", manner: "ゆっくりと昔話のように語る。", rumors: ["丘の上の遺跡には触れるなと祖父に言われた", "昔はこの村も銀で栄えた"], name: "長老ウェン", role: "村長", location: "loc_riefen", publicProfile: "村の古い伝承に詳しい長老。", goals: ["村を守る"], fears: ["遺跡の封印が解かれること"], secrets: [] },
+  { id: "npc_kass", manner: "調子がよく、何でも商売に結びつける。", rumors: ["王都では東方の香辛料が流行っている", "街道の北で盗賊を見たという話がある"], name: "カス", role: "行商人", location: "loc_highway", publicProfile: "口のうまい行商人。品揃えは日によって違う。", goals: ["一山当てる"], fears: ["盗賊"], secrets: [] },
+  { id: "npc_selphine", manner: "簡潔で冷ややか。人間を「森の客人」と呼ぶ。", rumors: ["森は与え、そして奪う", "光を追う者は帰らない"], name: "セルフィーネ", role: "エルフの狩人", location: "loc_spirit_forest", publicProfile: "森に住むエルフの狩人。人間とは距離を置く。", goals: ["森の均衡を守る"], fears: [], secrets: [] },
+  { id: "npc_grik", manner: "片言の人間語。単語を区切って話す。", rumors: ["ニンゲン、コワイ", "シタ、イカナイ"], name: "グリク", role: "ゴブリンの族長", location: "loc_old_mine", publicProfile: "旧鉱山に住み着いたゴブリンたちの族長。", goals: ["一族が冬を越す"], fears: ["地下深くの何か"], secrets: ["地下の坑道から追われて鉱山上層に来た"] },
+  { id: "npc_mira", manner: "はきはきした元鉱夫。鉱山の話になると熱が入る。", rumors: ["鉱山が再開すれば村は生き返る", "坑道の地図はブランが持っているはず"], name: "ミラ", role: "元鉱夫", location: "loc_riefen", publicProfile: "鉱山の再開を願う元鉱夫。", goals: ["鉱山の再開"], fears: [], secrets: [] },
+  { id: "npc_rolf", manner: "真面目で心配性。すぐ規則を持ち出す。", rumors: ["夜の外出は控えてほしい", "ゴブリンの足跡を見たという話がある"], name: "ロルフ", role: "衛兵", location: "loc_square", publicProfile: "村でただ一人の衛兵。真面目だが心配性。", goals: ["村の治安"], fears: ["ゴブリンの襲撃"], secrets: [] },
+  { id: "npc_old_spirit", manner: "葉擦れのような声。片言で、ゆっくり話す。", rumors: ["森ハ覚エテイル", "約束ハ消エナイ"], name: "老いた精霊", role: "森の精霊", location: "loc_spirit_forest", publicProfile: "伝承に語られる森の精霊。", goals: ["約束を伝える"], fears: ["消えること"], secrets: [] },
 ];
 
 export const items: ItemDef[] = [

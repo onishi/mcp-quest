@@ -20,6 +20,12 @@ export interface EpisodeState {
   defeated: string[];
   combat: { active: boolean; enemies: Record<string, EnemyState> };
   visitedNodes: string[];
+  /** last turn at which the story advanced (clue, flag, scene, combat) */
+  progressTurn?: number;
+  /** hint ids already offered to the GM */
+  hintsGiven?: string[];
+  /** actions without story consequence (small talk, flavour); not counted toward maxTurns */
+  freeActions?: number;
 }
 
 export interface Host {

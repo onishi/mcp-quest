@@ -86,7 +86,13 @@ export const CheckSchema = z
   .strict();
 export type Check = z.infer<typeof CheckSchema>;
 
-export const ActionKindSchema = z.enum(["investigate", "talk", "interact", "use_item", "move"]);
+/**
+ * investigate / talk / interact / use_item / move: specific affordances.
+ * attempt: a free-form attempt the GM maps to a skill. `accepts` lists every
+ * skill (and its difficulty) that can overcome this obstacle, so the same
+ * problem can be solved in several ways.
+ */
+export const ActionKindSchema = z.enum(["investigate", "talk", "interact", "use_item", "move", "attempt"]);
 export type ActionKind = z.infer<typeof ActionKindSchema>;
 
 export const ApproachSchema = z.enum(["friendly", "persuade", "intimidate", "deceive"]);
@@ -111,6 +117,10 @@ export const TriggerSchema = z
     when: CondSchema.optional(),
     once: z.boolean().default(false),
     check: CheckSchema.optional(),
+    /** attempt only: skills that can overcome this obstacle, each with its own difficulty */
+    accepts: z.array(CheckSchema).min(1).max(8).optional(),
+    /** GM-only description of what this affordance represents (never shown as a menu) */
+    gmHint: ShortText.optional(),
     text: Text.optional(),
     effects: z.array(EffectSchema).max(16).default([]),
     onSuccess: z.array(EffectSchema).max(16).default([]),
@@ -220,6 +230,18 @@ export const FallbackSchema = z
   })
   .strict();
 
+/** Subtle nudges for the GM when the player seems stuck (spec §4.2 Pacing Director). */
+export const HintSchema = z
+  .object({
+    id: Id,
+    text: Text,
+    /** offered only while this holds */
+    when: CondSchema.optional(),
+    /** stop offering once this holds */
+    until: CondSchema.optional(),
+  })
+  .strict();
+
 export const ScenarioSourceSchema = z
   .object({
     id: Id,
@@ -252,6 +274,7 @@ export const ScenarioSourceSchema = z
     clocks: z.array(ClockSchema).max(4).default([]),
     enemies: z.array(EnemySchema).max(8).default([]),
     triggers: z.array(TriggerSchema).min(1).max(64),
+    hints: z.array(HintSchema).max(16).default([]),
     resolutions: z.array(ResolutionSchema).min(1).max(12),
     fallbackPolicy: z.array(FallbackSchema).max(4).default([]),
     impactLimits: z
