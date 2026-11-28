@@ -290,6 +290,30 @@ export class Kernel {
     });
   }
 
+  /**
+   * Move an account from one identity to another (e.g. legacy access key →
+   * Google). Both identities must have been verified by the caller; the old
+   * identity is removed so it can no longer sign in.
+   */
+  linkIdentity(input: { fromIssuer: string; fromSubject: string; toIssuer: string; toSubject: string }): { account_id: string } {
+    return this.sql.transaction(() => {
+      const accountId = this.resolveIdentity(input.fromIssuer, input.fromSubject);
+      if (!accountId) throw new GameError("FORBIDDEN", "引き継ぎ元のアカウントが見つかりません。");
+      if (this.resolveIdentity(input.toIssuer, input.toSubject))
+        throw new GameError("CONFLICT", "このログイン手段は既に別のアカウントに紐付いています。");
+      this.sql.run(
+        "INSERT INTO identities (issuer, subject, account_id, created_at) VALUES (?, ?, ?, ?)",
+        input.toIssuer,
+        input.toSubject,
+        accountId,
+        this.iso(),
+      );
+      this.sql.run("DELETE FROM identities WHERE issuer = ? AND subject = ?", input.fromIssuer, input.fromSubject);
+      this.audit(accountId, "identity.link", accountId, null, { from: input.fromIssuer, to: input.toIssuer });
+      return { account_id: accountId };
+    });
+  }
+
   // --------------------------------------------------------------- admin
 
   setAccountStatus(actor: string, accountId: string, status: "active" | "suspended", reason: string) {

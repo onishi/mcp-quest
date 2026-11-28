@@ -70,6 +70,9 @@ export class WorldDO extends DurableObject<Env> {
   redeemInvite(input: { code: string; displayName: string; issuer: string; subject: string }) {
     return this.wrap(() => this.kernel.redeemInvite(input));
   }
+  linkIdentity(input: { fromIssuer: string; fromSubject: string; toIssuer: string; toSubject: string }) {
+    return this.wrap(() => this.kernel.linkIdentity(input));
+  }
   accountStatus(accountId: string) {
     return this.wrap(() => this.kernel.listAccounts().find((a) => a.account_id === accountId)?.status ?? null);
   }

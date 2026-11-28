@@ -21,7 +21,7 @@
 |---|---|---|---|
 | M01 | リポジトリ・TypeScript・Wrangler・テスト環境 | ✅ | npm workspaces、vitest、GitHub Actions CI |
 | M02 | リモートMCP read/write スパイク | 🟡 | ステージングにデプロイ済み。**Claude のカスタムコネクタで接続・作成・冒険・書き込みができることをプレイヤーが確認**（2026-11-25）。確認ダイアログの頻度、新しい GM 指針への追従は未記録。ChatGPT は未検証 |
-| M03 | OAuth・内部account_id・招待 | 🟡 | DCR + PKCE、招待コード登録、アクセスキーログイン、停止の即時反映。Google OIDC は未実装（招待制運用では後回し可） |
+| M03 | OAuth・内部account_id・招待 | 🟡 | DCR + PKCE、**Google ログイン（OIDC）+ 初回のみ招待コード**、旧アクセスキーからの引き継ぎ、停止の即時反映。ローカルの擬似 Google で E2E 確認済み。実際の Google での確認はステージング設定後 |
 | M04 | World DO + SQLite初期化 | ✅ | `WORLD_INSTANCE` で dev / production を分離。マイグレーション、シナリオ digest 検査 |
 | M05 | Command pipeline + イベント + receipt | ✅ | 冪等キー、payload 不一致拒否、古い turn 拒否、単一トランザクション確定 |
 | M06 | キャラクター・冒険権・所有権 | ✅ | 1アカウント1キャラ、1日1権・最大3・JST 4:00、同時進行1、再開は消費なし |

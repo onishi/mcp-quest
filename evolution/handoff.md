@@ -40,3 +40,9 @@ Claude で遊んだプレイヤーから「会話もすべて行動に」「で�
 - DSL に `goldGte` 条件を追加（所持金が足りないと買えない）。
 - ROADMAP.md を現状に更新。
 - 未検証: 新シナリオの人間によるプレイ。改修後の GM 指針への Claude の追従。
+
+## 2026-11-28 追記: Google ログイン
+
+- 認可画面の本人確認をアクセスキーから Google（OIDC、`openid profile`、PKCE + nonce）に変更。初回のみ招待コード。旧アクセスキーのアカウントは初回ログイン時にキーを入力して引き継ぐ（`Kernel.linkIdentity`、両方の本人確認が必要）。
+- ローカルは `scripts/smoke.ts` 内蔵の擬似 OIDC サーバーで E2E 確認。デプロイ後は `scripts/check-deploy.ts`。
+- ステージングに `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` が設定されるまでデプロイしない（設定前にデプロイすると誰もログインできなくなる）。

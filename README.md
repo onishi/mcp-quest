@@ -12,7 +12,7 @@ ChatGPT・Claude などの対話AIを GM として、リモート MCP 経由で�
 | 範囲 | 状態 |
 |---|---|
 | Player MCP 16ツール（stateless Streamable HTTP） | 実装済み・ローカルで E2E 確認 |
-| OAuth（DCR + PKCE、招待コード登録 + アクセスキー） | 実装済み・ローカルで確認。Google OIDC は未実装 |
+| OAuth（DCR + PKCE）、Google ログイン + 初回のみ招待コード | 実装済み・ローカル（擬似 Google）で E2E 確認 |
 | World Durable Object + SQLite、イベント・receipt・outbox | 実装済み |
 | 冒険権（1日1回付与・最大3・JST 4:00 境界） | 実装済み |
 | Scenario DSL（スキーマ・コンパイラ・実行器） | 実装済み |
@@ -45,10 +45,18 @@ npm install
 npm run ci            # typecheck + LLM-free check + scenario compile + tests
 
 # ローカル起動（wrangler dev。KV/DO はローカルで模擬される）
-echo 'ADMIN_TOKEN=dev-admin-token' > apps/game/.dev.vars
+# Google の代わりに scripts/smoke.ts 内蔵の擬似 OIDC サーバー（127.0.0.1:9898）を使う
+cat > apps/game/.dev.vars <<'VARS'
+ADMIN_TOKEN=dev-admin-token
+GOOGLE_CLIENT_ID=fake-client
+GOOGLE_CLIENT_SECRET=fake-secret
+OIDC_AUTHORIZE_URL=http://127.0.0.1:9898/authorize
+OIDC_TOKEN_URL=http://127.0.0.1:9898/token
+OIDC_ISSUER=http://127.0.0.1:9898
+VARS
 npm run dev           # http://127.0.0.1:8787
 
-# 別ターミナルで E2E スモーク（招待 → OAuth → MCP → 別セッション再開 → 停止）
+# 別ターミナルで E2E スモーク（招待 → Google ログイン → MCP → 別セッション再開 → 停止）
 BASE_URL=http://127.0.0.1:8787 ADMIN_TOKEN=dev-admin-token npx tsx scripts/smoke.ts
 ```
 
@@ -57,7 +65,7 @@ BASE_URL=http://127.0.0.1:8787 ADMIN_TOKEN=dev-admin-token npx tsx scripts/smoke
 1. 招待コードを発行する:
    `curl -X POST -H 'authorization: Bearer dev-admin-token' http://127.0.0.1:8787/admin/invites -d '{}'`
 2. MCP クライアント（例: MCP Inspector `npx @modelcontextprotocol/inspector`）で `http://127.0.0.1:8787/mcp` に接続する。
-3. 認可画面で招待コードと表示名を入力するとアカウントが作られ、**アクセスキーが一度だけ表示される**。以後の接続はアクセスキーでログインする。
+3. 認可画面で「Google でログインして許可」を押す。初回だけ招待コードと表示名を入力するとアカウントが作られる。以後は Google でログインするだけ。
 4. AI に「冒険を始めたい」と話しかける。サーバー指示（GM 指針）に従い `resume_game` → `create_character` → `get_adventures` → `start_adventure` → `get_actions` / `act` と進む。
 
 Claude 等の実クライアントから接続するには公開 HTTPS の URL が必要（デプロイ手順は [`docs/operations.md`](docs/operations.md)）。

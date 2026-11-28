@@ -3,7 +3,7 @@
  * the internal admin API (M13). Admin requires a bearer token and every
  * mutating admin call needs a reason, which is written to the audit log.
  */
-import { handleAuthorize } from "./auth.js";
+import { handleAuthorize, handleCallback } from "./auth.js";
 import { type Env, worldStub } from "./env.js";
 import { escapeHtml, page } from "./html.js";
 
@@ -75,7 +75,9 @@ async function publicHome(env: Env, url: URL): Promise<Response> {
 export const appHandler = {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
-    if (url.pathname === "/authorize") return handleAuthorize(request, env);
+    const origin = env.PUBLIC_ORIGIN || url.origin;
+    if (url.pathname === "/authorize") return handleAuthorize(request, env, origin);
+    if (url.pathname === "/callback") return handleCallback(request, env, origin);
     if (url.pathname === "/healthz") return json({ ok: true });
     if (url.pathname === "/api/world" && request.method === "GET") {
       const res = await worldStub(env).publicSnapshot();

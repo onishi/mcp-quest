@@ -13,6 +13,13 @@ export interface Env {
   WORLD_INSTANCE: string;
   /** Canonical public origin (e.g. https://quest.example.com). Falls back to the request origin. */
   PUBLIC_ORIGIN?: string;
+  /** Google OAuth client (identity only; not an LLM credential). */
+  GOOGLE_CLIENT_ID?: string;
+  GOOGLE_CLIENT_SECRET?: string;
+  /** Local development only: point the OIDC flow at a fake IdP. Leave unset in deployed environments. */
+  OIDC_AUTHORIZE_URL?: string;
+  OIDC_TOKEN_URL?: string;
+  OIDC_ISSUER?: string;
   /** Bearer token for the internal admin API (not an LLM credential). */
   ADMIN_TOKEN?: string;
 }
@@ -28,6 +35,7 @@ export interface WorldApi {
   tool(accountId: string, name: string, input: unknown): Promise<RpcResult<Obj>>;
   resolveIdentity(issuer: string, subject: string): Promise<RpcResult<string | null>>;
   redeemInvite(input: { code: string; displayName: string; issuer: string; subject: string }): Promise<RpcResult<{ account_id: string }>>;
+  linkIdentity(input: { fromIssuer: string; fromSubject: string; toIssuer: string; toSubject: string }): Promise<RpcResult<{ account_id: string }>>;
   accountStatus(accountId: string): Promise<RpcResult<string | null>>;
   admin(op: string, args: Obj): Promise<RpcResult<unknown>>;
   publicSnapshot(): Promise<

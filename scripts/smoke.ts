@@ -1,12 +1,14 @@
 /**
  * End-to-end smoke test against a running game Worker (wrangler dev or a
  * deployed URL). Exercises: admin invite → OAuth (DCR + PKCE + invite
- * registration) → MCP tools → second session via access-key login → resume.
+ * registration with a fake Google IdP) → MCP tools → second session via a fresh
+ * Google login → resume → suspension. Local only (needs the fake-IdP .dev.vars).
  *
  *   BASE_URL=http://127.0.0.1:8787 ADMIN_TOKEN=dev-admin-token npx tsx scripts/smoke.ts
  */
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
+import { createServer } from "node:http";
 
 const BASE = process.env.BASE_URL ?? "http://127.0.0.1:8787";
 const ADMIN = process.env.ADMIN_TOKEN ?? "dev-admin-token";
@@ -16,40 +18,92 @@ function b64url(buf: ArrayBuffer | Uint8Array) {
   return Buffer.from(buf as Uint8Array).toString("base64url");
 }
 
-async function oauth(clientId: string, form: Record<string, string>) {
+// --- fake Google (OIDC) for local runs. wrangler dev must point at it via .dev.vars:
+//   GOOGLE_CLIENT_ID=fake-client  GOOGLE_CLIENT_SECRET=fake-secret
+//   OIDC_AUTHORIZE_URL=http://127.0.0.1:9898/authorize  OIDC_TOKEN_URL=http://127.0.0.1:9898/token  OIDC_ISSUER=http://127.0.0.1:9898
+const IDP_PORT = 9898;
+let currentSub = "google-user-1";
+const codes = new Map<string, { nonce: string; sub: string }>();
+const idp = createServer(async (req, res) => {
+  const u = new URL(req.url ?? "/", `http://127.0.0.1:${IDP_PORT}`);
+  if (u.pathname === "/authorize") {
+    const code = `code-${Math.random().toString(36).slice(2)}`;
+    codes.set(code, { nonce: u.searchParams.get("nonce") ?? "", sub: currentSub });
+    const back = new URL(u.searchParams.get("redirect_uri")!);
+    back.searchParams.set("code", code);
+    back.searchParams.set("state", u.searchParams.get("state")!);
+    res.writeHead(302, { location: back.toString() }).end();
+    return;
+  }
+  if (u.pathname === "/token") {
+    let body = "";
+    for await (const chunk of req) body += chunk;
+    const p = new URLSearchParams(body);
+    const c = codes.get(p.get("code") ?? "");
+    if (!c || p.get("client_secret") !== "fake-secret" || !p.get("code_verifier")) return void res.writeHead(400).end("{}");
+    const claims = { iss: `http://127.0.0.1:${IDP_PORT}`, aud: p.get("client_id"), sub: c.sub, nonce: c.nonce, exp: Math.floor(Date.now() / 1000) + 300, given_name: "スモーク" };
+    const jwt = `${b64url(Buffer.from('{"alg":"none"}'))}.${b64url(Buffer.from(JSON.stringify(claims)))}.`;
+    res.writeHead(200, { "content-type": "application/json" }).end(JSON.stringify({ id_token: jwt, access_token: "x" }));
+    return;
+  }
+  res.writeHead(404).end();
+});
+
+class Jar {
+  private c = new Map<string, string>();
+  take(res: Response) {
+    for (const sc of res.headers.getSetCookie()) {
+      const [kv] = sc.split(";");
+      const i = kv!.indexOf("=");
+      this.c.set(kv!.slice(0, i), kv!.slice(i + 1));
+    }
+  }
+  get header() {
+    return [...this.c].map(([k, v]) => `${k}=${v}`).join("; ");
+  }
+}
+
+/** Run the full authorization: consent → (fake) Google → optional first-time invite → token. */
+async function oauth(clientId: string, opts: { sub: string; invite?: string; displayName?: string }) {
+  currentSub = opts.sub;
+  const jar = new Jar();
   const verifier = b64url(crypto.getRandomValues(new Uint8Array(32)));
   const challenge = b64url(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(verifier)));
   const q = new URLSearchParams({
-    response_type: "code",
-    client_id: clientId,
-    redirect_uri: REDIRECT,
-    state: "xyz",
-    scope: "game:play",
-    code_challenge: challenge,
-    code_challenge_method: "S256",
-    resource: `${BASE}/mcp`,
+    response_type: "code", client_id: clientId, redirect_uri: REDIRECT, state: "xyz", scope: "game:play",
+    code_challenge: challenge, code_challenge_method: "S256", resource: `${BASE}/mcp`,
   });
   const authUrl = `${BASE}/authorize?${q}`;
   const page = await fetch(authUrl);
   if (!page.ok) throw new Error(`authorize GET ${page.status}: ${await page.text()}`);
-  const html = await page.text();
-  const handle = /name="handle" value="([^"]+)"/.exec(html)?.[1];
-  const cookie = page.headers.getSetCookie().map((c) => c.split(";")[0]).join("; ");
+  jar.take(page);
+  const handle = /name="handle" value="([^"]+)"/.exec(await page.text())?.[1];
   if (!handle) throw new Error("no consent handle");
-  const post = await fetch(authUrl, {
-    method: "POST",
-    redirect: "manual",
-    headers: { cookie, "content-type": "application/x-www-form-urlencoded", origin: BASE },
-    body: new URLSearchParams({ handle, ...form }),
+  const approve = await fetch(authUrl, {
+    method: "POST", redirect: "manual",
+    headers: { cookie: jar.header, "content-type": "application/x-www-form-urlencoded", origin: BASE },
+    body: new URLSearchParams({ handle, decision: "approve" }),
   });
-  let location = post.headers.get("location");
-  let accessKey: string | undefined;
-  if (!location) {
-    const body = await post.text();
-    accessKey = /class="key">([^<]+)</.exec(body)?.[1];
-    location = /href="([^"]+)">保存しました/.exec(body)?.[1]?.replace(/&amp;/g, "&") ?? null;
-    if (!location) throw new Error(`authorize POST failed: ${post.status} ${body.slice(0, 500)}`);
+  jar.take(approve);
+  const toIdp = approve.headers.get("location");
+  if (!toIdp?.startsWith(`http://127.0.0.1:${IDP_PORT}/authorize`)) throw new Error(`expected redirect to IdP, got ${approve.status} ${toIdp}`);
+  const fromIdp = (await fetch(toIdp, { redirect: "manual" })).headers.get("location")!;
+  let res = await fetch(fromIdp, { redirect: "manual", headers: { cookie: jar.header } });
+  jar.take(res);
+  if (res.status === 200) {
+    // first time: invite form
+    const html = await res.text();
+    const action = /<form method="post" action="([^"]+)">\s*<input type="hidden" name="mode" value="register">/.exec(html)?.[1]?.replace(/&amp;/g, "&");
+    if (!action || !opts.invite) throw new Error(`first-time page without invite: ${html.slice(0, 300)}`);
+    res = await fetch(new URL(action, BASE), {
+      method: "POST", redirect: "manual",
+      headers: { cookie: jar.header, "content-type": "application/x-www-form-urlencoded", origin: BASE },
+      body: new URLSearchParams({ mode: "register", invite: opts.invite, display_name: opts.displayName ?? "スモーク" }),
+    });
+    jar.take(res);
   }
+  const location = res.headers.get("location");
+  if (!location?.startsWith(REDIRECT)) throw new Error(`authorization failed: ${res.status} ${location ?? (await res.text()).slice(0, 300)}`);
   const code = new URL(location).searchParams.get("code");
   if (!code) throw new Error(`no code in ${location}`);
   const tok = await fetch(`${BASE}/token`, {
@@ -59,7 +113,7 @@ async function oauth(clientId: string, form: Record<string, string>) {
   });
   const tj = (await tok.json()) as { access_token?: string };
   if (!tj.access_token) throw new Error(`token failed: ${JSON.stringify(tj)}`);
-  return { token: tj.access_token, accessKey };
+  return { token: tj.access_token };
 }
 
 async function mcp(token: string) {
@@ -78,6 +132,7 @@ const rid = () => `smoke-${Date.now()}-${Math.random().toString(36).slice(2, 8)}
 const log = (...a: unknown[]) => console.log("•", ...a);
 
 async function main() {
+  await new Promise<void>((r) => idp.listen(IDP_PORT, "127.0.0.1", r));
   // 1. admin creates an invite
   const inv = await fetch(`${BASE}/admin/invites`, { method: "POST", headers: { authorization: `Bearer ${ADMIN}`, "content-type": "application/json" }, body: "{}" });
   const { code } = (await inv.json()) as { code: string };
@@ -93,8 +148,16 @@ async function main() {
   log("client", client_id);
 
   // 3. register via invite
-  const first = await oauth(client_id, { mode: "register", invite: code, display_name: "スモーク" });
-  log("registered; access key issued:", !!first.accessKey);
+  const sub = `google-${Date.now()}`;
+  const first = await oauth(client_id, { sub, invite: code, displayName: "スモーク" });
+  log("registered via Google + invite");
+  try {
+    await oauth(client_id, { sub: `stranger-${Date.now()}` });
+    throw new Error("expected unknown Google user without invite to be refused");
+  } catch (e: any) {
+    if (!String(e.message).includes("first-time page without invite")) throw e;
+    log("unknown Google user without invite → asked for invite code");
+  }
 
   // unauthenticated MCP is rejected
   const unauth = await fetch(`${BASE}/mcp`, { method: "POST", headers: { "content-type": "application/json" }, body: "{}" });
@@ -131,7 +194,7 @@ async function main() {
   await a.client.close();
 
   // 5. "chat B": a fresh OAuth login with the access key, then resume
-  const second = await oauth(client_id, { mode: "login", access_key: first.accessKey! });
+  const second = await oauth(client_id, { sub });
   const b = await mcp(second.token);
   const resumed = await b.call("resume_game", { character_id: chr });
   if (resumed.active_episode?.episode_id !== ep || resumed.active_episode.turn !== r2.turn) throw new Error("resume mismatch");
@@ -160,6 +223,7 @@ async function main() {
   const home = await fetch(`${BASE}/`);
   log("public page", home.status);
   console.log("\nSMOKE OK");
+  idp.close();
 }
 
 main().catch((e) => {

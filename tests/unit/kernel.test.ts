@@ -289,3 +289,27 @@ describe("moderation", () => {
     expect(e.details.retry_after).toBeGreaterThan(0);
   });
 });
+
+describe("identity linking (legacy access key → Google)", () => {
+  it("moves the account to the new identity and retires the old one", () => {
+    const { kernel } = makeKernel();
+    const { code } = kernel.createInvite({ createdBy: "admin" });
+    const { account_id } = kernel.redeemInvite({ code, displayName: "旧", issuer: "mcp-quest:key", subject: "keyhash" });
+    const linked = kernel.linkIdentity({ fromIssuer: "mcp-quest:key", fromSubject: "keyhash", toIssuer: "https://accounts.google.com", toSubject: "g-123" });
+    expect(linked.account_id).toBe(account_id);
+    expect(kernel.resolveIdentity("https://accounts.google.com", "g-123")).toBe(account_id);
+    expect(kernel.resolveIdentity("mcp-quest:key", "keyhash")).toBeUndefined();
+    expect((kernel.auditLog() as any[]).some((a) => a.action === "identity.link")).toBe(true);
+  });
+
+  it("rejects unknown keys and identities already in use", () => {
+    const { kernel } = makeKernel();
+    expectError(() => kernel.linkIdentity({ fromIssuer: "mcp-quest:key", fromSubject: "nope", toIssuer: "g", toSubject: "1" }), "FORBIDDEN");
+    const a = kernel.createInvite({ createdBy: "admin" });
+    kernel.redeemInvite({ code: a.code, displayName: "A", issuer: "mcp-quest:key", subject: "k1" });
+    const b = kernel.createInvite({ createdBy: "admin" });
+    kernel.redeemInvite({ code: b.code, displayName: "B", issuer: "g", subject: "taken" });
+    expectError(() => kernel.linkIdentity({ fromIssuer: "mcp-quest:key", fromSubject: "k1", toIssuer: "g", toSubject: "taken" }), "CONFLICT");
+    expect(kernel.resolveIdentity("mcp-quest:key", "k1")).toBeDefined();
+  });
+});

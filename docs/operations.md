@@ -6,12 +6,23 @@
 - 2026-11-25 デプロイ。`scripts/smoke.ts` による E2E は成功。実クライアントでの検証は未実施。
 - `ADMIN_TOKEN` は Worker の Secret として設定済み（リポジトリには含めない）。
 
+## Google ログインの設定
+
+1. Google Cloud Console → 「API とサービス」→「OAuth 同意画面」を設定する（外部、アプリ名 MCP Quest。テスト中は「テストユーザー」に遊ぶ人の Google アカウントを追加するか、アプリを公開する）。スコープは `openid` と `profile` のみ。
+2. 「認証情報」→「OAuth クライアント ID を作成」→ 種類「ウェブ アプリケーション」。承認済みのリダイレクト URI に `https://<host>/callback` を登録する（ステージング: `https://mcp-quest-game.wagaya.workers.dev/callback`）。
+3. Worker の Secret に設定する（Cloudflare ダッシュボードの Workers → 対象 Worker → 設定 → 変数とシークレット、または `npx wrangler secret put GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`）。
+4. デプロイ後に `BASE_URL=https://<host> npx tsx scripts/check-deploy.ts` で Google へのリダイレクトまでを確認し、最後に Claude から実際にログインする。
+
+保存するのは Google の `sub`（利用者ごとの不変 ID）だけで、メールアドレスは保存しない。`OIDC_*` 変数はローカルの擬似 IdP 用で、デプロイ環境には設定しない。
+
+以前のアクセスキーで作ったアカウントは、初回の Google ログイン後の画面でキーを一度入力すると Google アカウントに引き継がれる（キーはそれ以降使えない）。
+
 ## デプロイ手順
 
 1. KV ネームスペースを作成し、`apps/game/wrangler.jsonc` の `OAUTH_KV` の id を置き換える。
    `npx wrangler kv namespace create OAUTH_KV`
-2. 管理トークンを設定する（LLM 用の Secret は**設定しない**）。
-   `npx wrangler secret put ADMIN_TOKEN`
+2. 管理トークンと Google OAuth クライアントを設定する（LLM 用の Secret は**設定しない**）。
+   `npx wrangler secret put ADMIN_TOKEN`、`GOOGLE_CLIENT_ID`、`GOOGLE_CLIENT_SECRET`
 3. 必要なら `PUBLIC_ORIGIN` を vars に設定する（OAuth の resource 識別子に使う）。
 4. `npx wrangler deploy`（本番は `--env production`。世界は `WORLD_INSTANCE` で分離される）。
 5. Claude の「カスタムコネクタ」に `https://<host>/mcp` を登録し、M02 の検証項目（認可、書き込み、確認ダイアログの頻度、別チャットからの再開）を記録する。
