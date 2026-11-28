@@ -65,6 +65,9 @@ export const items: ItemDef[] = [
   { id: "silver_ore", name: "銀鉱石", kind: "treasure", description: "旧鉱山の良質な銀鉱石。", value: 12 },
   { id: "spirit_charm", name: "精霊のお守り", kind: "treasure", description: "微かに温かい木の実のお守り。", value: 0 },
   { id: "guild_badge", name: "ギルド認定章", kind: "treasure", description: "リーフェン支部の認定冒険者の証。", value: 0 },
+  { id: "fake_elixir", name: "「王都の霊薬」", kind: "quest", description: "鮮やかな青い液体の入った小瓶。甘い匂いがする。", value: 0 },
+  { id: "debt_letter", name: "督促状", kind: "quest", description: "乱暴な字で書かれた借金の取り立ての手紙。", value: 0 },
+  { id: "seal_prayer", name: "封印の祈りの写し", kind: "quest", description: "教会の古い記録から書き写した祈りの文句。", value: 0 },
   { id: "tobis_satchel", name: "トビの採集袋", kind: "quest", description: "薬草が半分ほど入った小さな袋。", value: 0 },
 ];
 
@@ -75,6 +78,7 @@ export const monsters: MonsterDef[] = [
   { id: "wolf", name: "森狼", hp: 8, defense: 12, attack: 3, damage: "1d6", description: "飢えた森の狼。" },
   { id: "cave_spider", name: "洞窟グモ", hp: 9, defense: 12, attack: 3, damage: "1d6", description: "毒牙を持つ大蜘蛛。" },
   { id: "forest_wisp", name: "迷いの鬼火", hp: 5, defense: 14, attack: 2, damage: "1d4", description: "旅人を惑わす光。" },
+  { id: "bandit", name: "街道の盗賊", hp: 9, defense: 12, attack: 3, damage: "1d6", description: "革鎧に短剣の荒くれ者。" },
   { id: "skeleton", name: "骸骨兵", hp: 10, defense: 12, attack: 2, damage: "1d6", description: "遺跡を守る古い骸骨。" },
 ];
 
@@ -99,6 +103,16 @@ export const facts: FactDef[] = [
   { id: "fact_spirit_promise", text: "老いた精霊は、三十年前に交わされた約束を伝えようとしている。", visibility: "secret" },
   { id: "fact_spirit_promise_delivered", text: "眠れる竜亭の空席に置かれた酒の謎は解け、三十年越しの約束が果たされた。", visibility: "public" },
   { id: "fact_gord_seeks_friend", text: "酒場の主人ゴルドは、失踪した友の足跡を探す決意をした。", visibility: "public" },
+  { id: "fact_well_seal", text: "広場の古井戸の底には、古代の封印石が眠っている。", visibility: "secret" },
+  { id: "fact_well_restored", text: "広場の古井戸の底の古代の封印が修復され、夜の光は消えた。", visibility: "public" },
+  { id: "fact_well_closed", text: "夜ごと光っていた広場の古井戸は、石で塞がれた。", visibility: "public" },
+  { id: "fact_seal_in_chapel", text: "古井戸から引き上げられた古代の封印石は、光の教会に安置されている。", visibility: "public" },
+  { id: "fact_kass_exposed", text: "行商人カスの「王都の霊薬」は偽物だと暴かれ、カスは村を追われた。", visibility: "public" },
+  { id: "fact_kass_redeemed", text: "行商人カスは偽薬の代金を村人に返し、まっとうな商いを誓った。", visibility: "public" },
+  { id: "fact_kass_arrested", text: "行商人カスは偽薬を売った罪で衛兵に捕らえられた。", visibility: "public" },
+  { id: "fact_highway_bandits", text: "街道には、行商人から金を巻き上げる盗賊の一味がいる。", visibility: "public" },
+  { id: "fact_highway_bandits_driven", text: "街道で行商人を脅していた盗賊の一味が追い払われた。", visibility: "public" },
+  { id: "fact_kass_coerced", text: "行商人カスは街道の盗賊に借金で脅され、偽薬を売らされていた。", visibility: "secret" },
   { id: "fact_old_coin_crest", text: "古い銀貨の紋章は、古代遺跡の扉に刻まれた紋章と同じだ。", visibility: "secret" },
 ];
 

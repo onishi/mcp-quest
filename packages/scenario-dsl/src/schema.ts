@@ -37,6 +37,7 @@ export type Cond =
   | { clock: string; gte: number }
   | { defeated: string }
   | { hasItem: string }
+  | { goldGte: number }
   | { turnGte: number }
   | { combat: boolean }
   | { not: Cond }
@@ -51,6 +52,7 @@ export const CondSchema: z.ZodType<Cond> = z.lazy(() =>
     z.object({ clock: Id, gte: z.number().int().min(0).max(100) }).strict(),
     z.object({ defeated: Id }).strict(),
     z.object({ hasItem: Id }).strict(),
+    z.object({ goldGte: z.number().int().min(0).max(10000) }).strict(),
     z.object({ turnGte: z.number().int().min(0).max(200) }).strict(),
     z.object({ combat: z.boolean() }).strict(),
     z.object({ not: CondSchema }).strict(),

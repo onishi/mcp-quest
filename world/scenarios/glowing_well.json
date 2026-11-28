@@ -1,0 +1,134 @@
+{
+  "id": "glowing_well",
+  "version": 1,
+  "schemaVersion": 1,
+  "title": "夜になると光る古井戸",
+  "kind": "investigation",
+  "difficulty": 2,
+  "targetTurns": 12,
+  "maxTurns": 22,
+  "region": "riefen",
+  "hook": "長老ウェンが杖をつきながら声をかけてきた。「広場の古井戸がな、夜になると青白く光るのじゃ。その水を飲んだ山羊が三日も眠り続けておる。井戸は村ができる前からあるもの……何かが目を覚ましたのかもしれん」",
+  "publicSummary": "夜ごと光る古井戸と、眠り続ける家畜の謎を調べる。調査と古い魔法の物語。",
+  "gmNotes": "井戸の底には古代の封印石があり、ひびから眠りの魔力が漏れている。修復する、引き上げて教会に預ける、井戸ごと塞ぐなど解決は複数。井戸の底では長居するほど眠気が増す。",
+  "tags": ["investigation", "magic", "mystery"],
+  "uniqueness": "unique_per_character",
+  "dependencies": [{ "entity": "npc_old_wen", "predicate": "alive" }],
+  "objectives": [
+    { "id": "o_source", "text": "光と眠りの原因を突き止める", "required": false, "doneWhen": { "clue": "c_cracked_seal" } },
+    { "id": "o_resolve", "text": "古井戸の異変を鎮める", "required": true, "doneWhen": { "any": [{ "flag": "seal_restored" }, { "flag": "stone_removed" }, { "flag": "well_closed" }] } }
+  ],
+  "initialNode": "square_day",
+  "nodes": [
+    {
+      "id": "square_day", "name": "昼の広場", "location": "loc_square",
+      "description": "朝市の片付けが終わった広場。苔むした石組みの古井戸のまわりには縄が張られ、衛兵ロルフが困った顔で立っている。",
+      "targets": [
+        { "id": "wen", "name": "長老ウェン", "kind": "npc", "entity": "npc_old_wen", "description": "白い顎髭の老人。村の伝承に詳しい。" },
+        { "id": "rolf", "name": "衛兵ロルフ", "kind": "npc", "entity": "npc_rolf", "description": "真面目そうな若い衛兵。井戸の番を命じられている。" },
+        { "id": "well", "name": "古井戸", "kind": "feature", "description": "石組みの古い井戸。縁の石には擦り切れた模様が彫られている。" }
+      ],
+      "exits": [
+        { "to": "chapel", "label": "光の教会を訪ねる" },
+        { "to": "square_night", "label": "日が暮れるのを待つ" }
+      ]
+    },
+    {
+      "id": "chapel", "name": "光の教会", "location": "loc_chapel",
+      "description": "小さな礼拝堂。鳴らない鐘の下で、神官アランが古い記録の束を整理している。",
+      "targets": [
+        { "id": "alan", "name": "神官アラン", "kind": "npc", "entity": "npc_father_alan", "description": "穏やかな中年の神官。" },
+        { "id": "records", "name": "教会の古い記録", "kind": "object", "description": "埃をかぶった羊皮紙の束。村の創建以前の記述もあるらしい。" }
+      ],
+      "exits": [
+        { "to": "square_day", "label": "広場へ戻る" },
+        { "to": "square_night", "label": "日が暮れてから広場へ向かう" }
+      ]
+    },
+    {
+      "id": "square_night", "name": "夜の広場", "location": "loc_square",
+      "description": "人気のない夜の広場。古井戸の口から青白い光が立ちのぼり、脈打つように明滅している。近づくと、甘い眠気が頭の奥に忍び込んでくる。",
+      "targets": [
+        { "id": "well_glow", "name": "光る古井戸", "kind": "feature", "description": "井戸の底から光が湧き上がっている。底までは深い。" },
+        { "id": "rolf_night", "name": "衛兵ロルフ", "kind": "npc", "entity": "npc_rolf", "description": "松明を手に、眠気と戦いながら見張りを続けている。" }
+      ],
+      "exits": [
+        { "to": "well_bottom", "label": "井戸の底へ降りる", "requires": { "flag": "descended" }, "lockedText": "井戸は深く、素手で降りるのは危険だ。ロープを使うか、石組みを伝って慎重に降りる必要がある。" },
+        { "to": "chapel", "label": "教会へ行く" }
+      ]
+    },
+    {
+      "id": "well_bottom", "name": "井戸の底", "location": "loc_square",
+      "description": "膝まで水に浸かる井戸の底。石壁の一部が崩れて横穴が開き、その奥で、古代文字の刻まれた円い石が青白く脈打っている。石の表面には一筋のひびが走っていた。",
+      "onEnter": [{ "op": "advance_clock", "id": "drowsy", "amount": 1 }],
+      "targets": [
+        { "id": "seal_stone", "name": "光る円い石", "kind": "object", "description": "直径一抱えほどの石盤。中央の紋章のまわりを古代文字が巡っている。" },
+        { "id": "side_tunnel", "name": "崩れた横穴", "kind": "feature", "description": "最近崩れたばかりの石壁。奥から水の流れる音がする。" }
+      ],
+      "exits": [{ "to": "square_night", "label": "地上へ戻る" }]
+    }
+  ],
+  "clues": [
+    { "id": "c_sleeping_goats", "text": "眠り続けているのは井戸の水を飲んだ家畜だけだ。水を汲んだ桶は、夜になるとかすかに光る。" },
+    { "id": "c_well_older", "text": "長老によれば、古井戸は村ができる前からあった。祖父の代には『井戸の底に触れるな』という言い伝えがあったという。" },
+    { "id": "c_seal_words", "text": "教会の記録に、創建以前の『眠りを封ずる石』と、その封を結び直す祈りの文句が記されていた。", "fact": "fact_well_seal" },
+    { "id": "c_glow_pulse", "text": "光は一定の間隔で脈打っている。眠る者の寝息のように。魔力の源は井戸の底にある。" },
+    { "id": "c_tunnel_collapse", "text": "横穴の崩落は新しい。最近、地下の水脈が揺れたことで、埋もれていた石が露わになったらしい。" },
+    { "id": "c_cracked_seal", "text": "光る石は古代の封印石だ。ひびから眠りの魔力が漏れ出し、井戸の水に溶けている。" },
+    { "id": "c_seal_crest", "text": "封印石の紋章は、古い銀貨や丘の上の遺跡の扉に刻まれた紋章と同じものだ。", "fact": "fact_old_coin_crest" }
+  ],
+  "clocks": [
+    {
+      "id": "drowsy", "name": "眠気", "max": 4,
+      "onFull": [
+        { "op": "narrate", "text": "瞼が鉛のように重い。膝が水の中に崩れ落ちそうになり、あなたは石壁にすがりついた。" },
+        { "op": "damage", "amount": "1d4" },
+        { "op": "set_flag", "id": "overcome_by_sleep" }
+      ]
+    }
+  ],
+  "enemies": [],
+  "triggers": [
+    { "id": "t_wen", "action": "talk", "target": "wen", "once": true, "text": "「わしの祖父は言っておった。『井戸の底には触れるな』とな。理由は誰も知らん。井戸は村ができる前からあったのじゃ」", "effects": [{ "op": "reveal_clue", "id": "c_well_older" }] },
+    { "id": "t_rolf", "action": "talk", "target": "rolf", "once": true, "text": "「眠ってるのは井戸の水を飲んだ家畜だけです。それに……汲み置きの桶が夜になると光るんですよ。気味が悪くて」", "effects": [{ "op": "reveal_clue", "id": "c_sleeping_goats" }] },
+    { "id": "t_well_day", "action": "investigate", "target": "well", "once": true, "check": { "skill": "lore", "difficulty": 12 }, "onSuccess": [{ "op": "reveal_clue", "id": "c_well_older" }, { "op": "set_flag", "id": "noticed_runes" }], "successText": "縁石の擦り切れた模様は、ただの飾りではない。古い文字だ。この井戸は村より古い。", "onFailure": [{ "op": "narrate", "text": "苔むした古い井戸だ。覗き込むと、底は暗くて見えない。" }], "failureText": "昼間の井戸に変わった様子はない。" },
+    { "id": "t_alan", "action": "talk", "target": "alan", "once": true, "text": "「古井戸の件ですね。実は記録の中に、創建より前の話が少しだけあるのです。読めない部分も多いのですが……」アランは羊皮紙の束を示した。", "effects": [{ "op": "set_flag", "id": "alan_helps" }] },
+    { "id": "t_records", "action": "attempt", "target": "records", "once": true, "gmHint": "古い記録を読み解く・神官と一緒に調べる・古い文字を解読する", "accepts": [{ "skill": "lore", "difficulty": 11 }, { "skill": "arcana", "difficulty": 12 }, { "skill": "insight", "difficulty": 13 }], "onSuccess": [{ "op": "reveal_clue", "id": "c_seal_words" }, { "op": "give_item", "item": "seal_prayer", "qty": 1 }], "successText": "掠れた文字の中に『眠りを封ずる石』という語を見つけた。その封を結び直す祈りの文句も残っている。アランが丁寧に書き写してくれた。", "onFailure": [{ "op": "narrate", "text": "文字が掠れて読めない。神官アランなら、どこを見ればいいか知っているかもしれない。" }], "failureText": "記録の解読は難航した。" },
+    { "id": "t_records_alan", "action": "investigate", "target": "records", "when": { "all": [{ "flag": "alan_helps" }, { "not": { "clue": "c_seal_words" } }] }, "once": true, "text": "アランと二人で記録をめくるうち、創建以前の頁に『眠りを封ずる石』の記述を見つけた。アランが封を結び直す祈りを書き写してくれる。", "effects": [{ "op": "reveal_clue", "id": "c_seal_words" }, { "op": "give_item", "item": "seal_prayer", "qty": 1 }] },
+    { "id": "t_glow", "action": "attempt", "target": "well_glow", "once": true, "gmHint": "光の正体や魔力の流れを探る・光の脈打つ間隔を観察する", "accepts": [{ "skill": "arcana", "difficulty": 10 }, { "skill": "perception", "difficulty": 11 }, { "skill": "insight", "difficulty": 12 }], "onSuccess": [{ "op": "reveal_clue", "id": "c_glow_pulse" }], "successText": "光は眠る者の寝息のように、一定の間隔で脈打っている。源は井戸の底だ。", "onFailure": [{ "op": "damage", "amount": "1" }], "failureText": "光を見つめているうちに意識が遠のきかけ、膝をついた。" },
+    { "id": "t_glow_look", "action": "investigate", "target": "well_glow", "once": true, "text": "覗き込むと、光は井戸の底のさらに奥、石壁の向こうから漏れているようだ。", "effects": [{ "op": "reveal_clue", "id": "c_glow_pulse" }] },
+    { "id": "t_rope_down", "action": "use_item", "item": "rope", "target": "well_glow", "once": true, "text": "井戸の滑車にロープを結び、ゆっくりと底へ降りる準備を整えた。", "effects": [{ "op": "set_flag", "id": "descended" }] },
+    { "id": "t_climb_down", "action": "attempt", "target": "well_glow", "when": { "not": { "flag": "descended" } }, "gmHint": "石組みを伝って降りる・桶の綱を使う・ロルフに綱を持ってもらう", "accepts": [{ "skill": "athletics", "difficulty": 12 }, { "skill": "acrobatics", "difficulty": 11 }, { "skill": "persuasion", "difficulty": 10 }], "onSuccess": [{ "op": "set_flag", "id": "descended" }], "successText": "石組みの隙間に指をかけ、慎重に井戸の底へと降りていく準備ができた。", "onFailure": [{ "op": "damage", "amount": "1d4" }], "failureText": "手が滑り、縁石で腕を擦りむいた。もう少し慎重な方法が要りそうだ。" },
+    { "id": "t_rolf_rope", "action": "talk", "target": "rolf_night", "once": true, "text": "「降りるんですか！？　……わかりました、綱は僕が持ってます。眠くなったらすぐ合図してください」ロルフは桶の綱を滑車に掛けてくれた。", "effects": [{ "op": "set_flag", "id": "descended" }] },
+    { "id": "t_tunnel", "action": "investigate", "target": "side_tunnel", "once": true, "text": "崩れた石はまだ角が鋭い。最近崩れたものだ。奥から聞こえる水音は、以前より水脈が近くなったことを示している。", "effects": [{ "op": "reveal_clue", "id": "c_tunnel_collapse" }, { "op": "advance_clock", "id": "drowsy", "amount": 1 }] },
+    { "id": "t_seal_study", "action": "attempt", "target": "seal_stone", "once": true, "gmHint": "封印石を調べる・文字や紋章を読む・魔力の漏れを探る", "accepts": [{ "skill": "arcana", "difficulty": 10 }, { "skill": "lore", "difficulty": 10 }, { "skill": "perception", "difficulty": 11 }], "onSuccess": [{ "op": "reveal_clue", "id": "c_cracked_seal" }, { "op": "reveal_clue", "id": "c_seal_crest" }], "successText": "これは封印石だ。ひびから眠りの魔力が漏れている。中央の紋章には見覚えがある……遺跡の扉と同じ紋章だ。", "onFailure": [{ "op": "reveal_clue", "id": "c_cracked_seal" }, { "op": "advance_clock", "id": "drowsy", "amount": 1 }], "failureText": "ひびから光が漏れているのは分かったが、近づくほど眠気が強くなる。" },
+    { "id": "t_seal_look", "action": "investigate", "target": "seal_stone", "when": { "not": { "clue": "c_cracked_seal" } }, "text": "石に触れずに観察する。ひびから青白い光が、水の中へ染み出している。これが眠りの源だ。", "effects": [{ "op": "reveal_clue", "id": "c_cracked_seal" }, { "op": "advance_clock", "id": "drowsy", "amount": 1 }] },
+    { "id": "t_prayer", "action": "use_item", "item": "seal_prayer", "target": "seal_stone", "once": true, "text": "書き写した祈りの文句を、一語ずつ石に向かって唱える。ひびの光が揺らぎ、やがて糸を縫い合わせるように閉じていった。井戸の底に、静かな暗闇が戻った。", "effects": [{ "op": "set_flag", "id": "seal_restored" }] },
+    { "id": "t_holy", "action": "use_item", "item": "holy_symbol", "target": "seal_stone", "once": true, "check": { "skill": "insight", "difficulty": 12 }, "onSuccess": [{ "op": "set_flag", "id": "seal_restored" }], "successText": "聖印を石にかざして祈ると、光の神の力がひびに流れ込み、裂け目は静かに閉じた。", "onFailure": [{ "op": "advance_clock", "id": "drowsy", "amount": 1 }], "failureText": "祈りは届いたが、古い封印は神の光とは異なる理で結ばれているようだ。もっと古い言葉が要るのかもしれない。" },
+    { "id": "t_mend", "action": "attempt", "target": "seal_stone", "when": { "all": [{ "clue": "c_cracked_seal" }, { "not": { "flag": "seal_restored" } }] }, "gmHint": "自分の知識と魔力で封印を結び直す・ひびを塞ぐ工夫をする", "accepts": [{ "skill": "arcana", "difficulty": 14 }, { "skill": "lore", "difficulty": 15 }, { "skill": "medicine", "difficulty": 16 }], "onSuccess": [{ "op": "set_flag", "id": "seal_restored" }], "successText": "記憶の底にある古い魔法の型をなぞり、ひびに魔力を通す。光が細くなり、やがて消えた。", "onFailure": [{ "op": "advance_clock", "id": "drowsy", "amount": 1 }], "failureText": "封印の構造は複雑で、手探りでは結び直せない。眠気がまた一段と深くなった。" },
+    { "id": "t_lift", "action": "attempt", "target": "seal_stone", "once": true, "when": { "not": { "flag": "seal_restored" } }, "gmHint": "封印石を持ち上げて地上へ運び出す（教会に預けるなど）", "accepts": [{ "skill": "athletics", "difficulty": 13 }, { "skill": "persuasion", "difficulty": 12 }], "onSuccess": [{ "op": "set_flag", "id": "stone_removed" }], "successText": "石を布でくるみ、ロルフと村人の手を借りて地上へ引き上げた。水から離れると、光は弱々しく瞬くだけになった。", "onFailure": [{ "op": "advance_clock", "id": "drowsy", "amount": 2 }, { "op": "damage", "amount": "1d3" }], "failureText": "石は見た目よりはるかに重い。腕が痺れ、眠気が一気に押し寄せる。" },
+    { "id": "t_close_well", "action": "attempt", "target": "well_glow", "once": true, "when": { "clue": "c_glow_pulse" }, "gmHint": "井戸そのものを石や土で塞いでしまう（村人やロルフの手を借りる）", "accepts": [{ "skill": "persuasion", "difficulty": 11 }, { "skill": "athletics", "difficulty": 13 }, { "skill": "intimidation", "difficulty": 12 }], "onSuccess": [{ "op": "set_flag", "id": "well_closed" }], "successText": "夜明けまでに村人を集め、井戸の口を大きな石で塞いだ。光は見えなくなった。……村は古い水源を一つ失った。", "onFailure": [{ "op": "narrate", "text": "村人たちは井戸を塞ぐことに渋い顔をした。この井戸は村の誇りでもあるのだ。" }], "failureText": "人手が集まらなかった。" }
+  ],
+  "hints": [
+    { "id": "h_rolf", "text": "ロルフが汲み置きの桶をちらちらと気にしている。何か言いたそうだ。", "when": { "node": "square_day" }, "until": { "clue": "c_sleeping_goats" } },
+    { "id": "h_chapel", "text": "長老が教会の方を見やって呟く。「古いことなら、アランの記録が詳しいかもしれんのう」", "when": { "node": "square_day" }, "until": { "any": [{ "clue": "c_seal_words" }, { "flag": "alan_helps" }] } },
+    { "id": "h_night", "text": "日が傾き始めた。この井戸は夜にこそ姿を見せるという。", "when": { "node": "square_day" }, "until": { "flag": "descended" } },
+    { "id": "h_down", "text": "ロルフが持つ桶の綱が、井戸の滑車に掛けられそうだ。", "when": { "node": "square_night" }, "until": { "flag": "descended" } },
+    { "id": "h_bottom", "text": "眠気がじわじわと強くなる。長居はできない。石をどうするか、決めなければ。", "when": { "node": "well_bottom" }, "until": { "any": [{ "flag": "seal_restored" }, { "flag": "stone_removed" }] } }
+  ],
+  "resolutions": [
+    { "id": "r_restored", "when": { "flag": "seal_restored" }, "outcome": "success", "title": "結び直された封印", "epilogue": "古井戸の光は消え、眠り続けていた山羊たちは翌朝、何事もなかったように目を覚ました。長老ウェンは封印石の紋章の話を聞くと、丘の上の遺跡の方を長いあいだ見つめていた。", "rewards": { "xp": 60, "gold": 25, "items": [] }, "worldEffects": [{ "op": "set_fact", "fact": "fact_well_restored" }, { "op": "set_fact", "fact": "fact_well_seal", "visibility": "private" }] },
+    { "id": "r_removed", "when": { "flag": "stone_removed" }, "outcome": "success", "title": "教会の封印石", "epilogue": "引き上げられた封印石は光の教会に運ばれ、神官アランが祭壇の脇に安置した。井戸の水は澄み、家畜は目を覚ました。石は今も、夜ごとかすかに瞬いているという。", "rewards": { "xp": 50, "gold": 20, "items": [] }, "worldEffects": [{ "op": "set_fact", "fact": "fact_seal_in_chapel" }] },
+    { "id": "r_closed", "when": { "flag": "well_closed" }, "outcome": "partial", "title": "塞がれた井戸", "epilogue": "井戸は石で塞がれ、夜の光は見えなくなった。家畜たちもやがて目を覚ました。だが、底に眠るものの正体は誰にも分からないまま、村は古い水源を失った。", "rewards": { "xp": 35, "gold": 15, "items": [] }, "worldEffects": [{ "op": "set_fact", "fact": "fact_well_closed" }] },
+    { "id": "r_withdraw", "when": { "flag": "withdrawn" }, "outcome": "withdrawn", "title": "見送られた調査", "epilogue": "あなたは調査を打ち切った。古井戸は今夜も青白く光っている。", "rewards": { "xp": 5, "gold": 0, "items": [] } },
+    { "id": "r_timeout", "when": { "flag": "timeout" }, "outcome": "partial", "title": "眠れぬ夜明け", "epilogue": "答えの出ないまま夜が明けた。光は朝日とともに薄れたが、また夜が来れば同じことが起きるだろう。", "rewards": { "xp": 15, "gold": 0, "items": [] } },
+    { "id": "r_down", "when": { "flag": "down" }, "outcome": "failure", "title": "井戸の底の眠り", "epilogue": "眠りに落ちたあなたは、綱を引くロルフに井戸から引き上げられた。目を覚ましたのは丸一日後のことだった。", "rewards": { "xp": 10, "gold": 0, "items": [] } },
+    { "id": "r_dep_lost", "when": { "flag": "dependency_lost" }, "outcome": "partial", "title": "依頼主のいない調査", "epilogue": "依頼の前提が変わり、調査は打ち切られた。あなたが見たものは、いつか誰かの役に立つだろう。", "rewards": { "xp": 15, "gold": 5, "items": [] } }
+  ],
+  "fallbackPolicy": [
+    { "when": "turn_limit", "mode": "conclude", "resolution": "r_timeout" },
+    { "when": "character_down", "mode": "conclude", "resolution": "r_down" },
+    { "when": "dependency_lost", "mode": "conclude", "resolution": "r_dep_lost", "followup": "daily_request" }
+  ],
+  "impactLimits": { "maxXp": 60, "maxGold": 25 }
+}

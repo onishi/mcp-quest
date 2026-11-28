@@ -31,6 +31,7 @@ export interface EpisodeState {
 export interface Host {
   turn(): number;
   hasItem(item: string): boolean;
+  gold?(): number;
   /** Apply a character-level effect (damage, heal, items, gold, relation). Returns narration. */
   applyCharacterEffect(effect: Extract<Effect, { op: "damage" | "heal" | "give_item" | "take_item" | "gold" | "relation" }>): string | undefined;
   /** Create combat stats for an enemy (from monster catalog). */
@@ -60,13 +61,14 @@ export function initialState(s: CompiledScenario): EpisodeState {
   };
 }
 
-export function evalCond(c: Cond, st: EpisodeState, host: Pick<Host, "turn" | "hasItem">): boolean {
+export function evalCond(c: Cond, st: EpisodeState, host: Pick<Host, "turn" | "hasItem" | "gold">): boolean {
   if ("flag" in c) return st.flags.includes(c.flag);
   if ("clue" in c) return st.clues.includes(c.clue);
   if ("node" in c) return st.node === c.node;
   if ("clock" in c) return (st.clocks[c.clock] ?? 0) >= c.gte;
   if ("defeated" in c) return st.defeated.includes(c.defeated);
   if ("hasItem" in c) return host.hasItem(c.hasItem);
+  if ("goldGte" in c) return (host.gold?.() ?? 0) >= c.goldGte;
   if ("turnGte" in c) return host.turn() >= c.turnGte;
   if ("combat" in c) return st.combat.active === c.combat;
   if ("not" in c) return !evalCond(c.not, st, host);
@@ -81,19 +83,19 @@ export function currentNode(s: CompiledScenario, st: EpisodeState): SceneNode {
   return n;
 }
 
-export function visibleTargets(s: CompiledScenario, st: EpisodeState, host: Pick<Host, "turn" | "hasItem">) {
+export function visibleTargets(s: CompiledScenario, st: EpisodeState, host: Pick<Host, "turn" | "hasItem" | "gold">) {
   return currentNode(s, st).targets.filter((t) => {
     if (t.kind === "enemy" && (st.defeated.includes(t.id) || !st.combat.enemies[t.id])) return false;
     return !t.visibleWhen || evalCond(t.visibleWhen, st, host);
   });
 }
 
-export function availableExits(s: CompiledScenario, st: EpisodeState, host: Pick<Host, "turn" | "hasItem">) {
+export function availableExits(s: CompiledScenario, st: EpisodeState, host: Pick<Host, "turn" | "hasItem" | "gold">) {
   return currentNode(s, st).exits.map((x) => ({ ...x, open: !x.requires || evalCond(x.requires, st, host) }));
 }
 
 /** Triggers usable right now (node, target visibility, when-condition, once). */
-export function eligibleTriggers(s: CompiledScenario, st: EpisodeState, host: Pick<Host, "turn" | "hasItem">): Trigger[] {
+export function eligibleTriggers(s: CompiledScenario, st: EpisodeState, host: Pick<Host, "turn" | "hasItem" | "gold">): Trigger[] {
   const targets = new Set(visibleTargets(s, st, host).map((t) => t.id));
   return s.triggers.filter((t) => {
     if (t.once && st.usedTriggers.includes(t.id)) return false;
@@ -178,11 +180,11 @@ export function emptyOutput(): EffectOutput {
   return { texts: [], revealedClues: [], combatStarted: [], combatEnded: false, defeated: [], effectsApplied: 0 };
 }
 
-export function findResolution(s: CompiledScenario, st: EpisodeState, host: Pick<Host, "turn" | "hasItem">): Resolution | undefined {
+export function findResolution(s: CompiledScenario, st: EpisodeState, host: Pick<Host, "turn" | "hasItem" | "gold">): Resolution | undefined {
   const direct = new Set(s.fallbackPolicy.map((f) => f.resolution));
   return s.resolutions.find((r) => r.outcome !== "withdrawn" && !direct.has(r.id) && evalCond(r.when, st, host));
 }
 
-export function objectiveStatus(s: CompiledScenario, st: EpisodeState, host: Pick<Host, "turn" | "hasItem">) {
+export function objectiveStatus(s: CompiledScenario, st: EpisodeState, host: Pick<Host, "turn" | "hasItem" | "gold">) {
   return s.objectives.map((o) => ({ id: o.id, text: o.text, required: o.required, done: evalCond(o.doneWhen, st, host) }));
 }

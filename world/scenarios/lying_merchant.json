@@ -1,0 +1,1097 @@
+{
+  "id": "lying_merchant",
+  "version": 1,
+  "schemaVersion": 1,
+  "title": "嘘つきの商人",
+  "kind": "investigation",
+  "difficulty": 2,
+  "targetTurns": 12,
+  "maxTurns": 22,
+  "region": "riefen",
+  "hook": "広場の市で、行商人カスが声を張り上げている。「王都の霊薬！　一口で疲れも病も吹き飛ぶよ！」だが衛兵ロルフが小声で耳打ちしてきた。「あれを飲んだ木こりが三人、寝込んでるんです。証拠がないと僕には手が出せなくて……」",
+  "publicSummary": "評判の「王都の霊薬」の真相を探る。推理と取引、そして誰を裁くかを選ぶ物語。",
+  "gmNotes": "霊薬は色水と眠り草の偽物。カスは街道の盗賊に借金で脅され、偽薬を売らされている。告発・救済・逮捕・盗賊との対決など、プレイヤーの正義に応じて結末が変わる。カスを一方的な悪人として描かない。",
+  "tags": [
+    "investigation",
+    "social",
+    "moral_choice"
+  ],
+  "uniqueness": "unique_per_character",
+  "dependencies": [
+    {
+      "entity": "npc_kass",
+      "predicate": "alive"
+    },
+    {
+      "entity": "npc_rolf",
+      "predicate": "alive"
+    }
+  ],
+  "objectives": [
+    {
+      "id": "o_truth",
+      "text": "霊薬の正体を突き止める",
+      "required": false,
+      "doneWhen": {
+        "clue": "c_fake"
+      }
+    },
+    {
+      "id": "o_why",
+      "text": "カスが偽薬を売る理由を知る",
+      "required": false,
+      "doneWhen": {
+        "clue": "c_coerced"
+      }
+    },
+    {
+      "id": "o_resolve",
+      "text": "偽薬騒ぎに決着をつける",
+      "required": true,
+      "doneWhen": {
+        "any": [
+          {
+            "flag": "kass_exposed"
+          },
+          {
+            "flag": "kass_redeemed"
+          },
+          {
+            "flag": "kass_arrested"
+          }
+        ]
+      }
+    }
+  ],
+  "initialNode": "market",
+  "nodes": [
+    {
+      "id": "market",
+      "name": "広場の市",
+      "location": "loc_square",
+      "description": "色とりどりの天幕が並ぶ市。カスの屋台には青い小瓶がずらりと並び、村人が列を作っている。少し離れて衛兵ロルフが腕を組んでいる。",
+      "targets": [
+        {
+          "id": "kass",
+          "name": "行商人カス",
+          "kind": "npc",
+          "entity": "npc_kass",
+          "description": "派手な帽子の小男。笑顔を絶やさないが、目の下には隈がある。"
+        },
+        {
+          "id": "elixir_stall",
+          "name": "霊薬の屋台",
+          "kind": "object",
+          "description": "青い小瓶が並ぶ屋台。一本十ゴールドの札が掛かっている。"
+        },
+        {
+          "id": "crowd",
+          "name": "列に並ぶ村人たち",
+          "kind": "npc",
+          "description": "疲れた顔の村人たち。宿屋の女将ヒルダの姿もある。"
+        },
+        {
+          "id": "rolf",
+          "name": "衛兵ロルフ",
+          "kind": "npc",
+          "entity": "npc_rolf",
+          "description": "眉間に皺を寄せてカスを見張っている。"
+        }
+      ],
+      "exits": [
+        {
+          "to": "inn",
+          "label": "カスの泊まる宿屋「麦の穂」へ"
+        },
+        {
+          "to": "highway_night",
+          "label": "夜の街道へ向かう",
+          "requires": {
+            "clue": "c_meeting"
+          },
+          "lockedText": "街道へ行く理由が、まだない。"
+        }
+      ]
+    },
+    {
+      "id": "inn",
+      "name": "宿屋「麦の穂」",
+      "location": "loc_inn",
+      "description": "旅人で賑わう宿屋。女将ヒルダが帳場で鼻歌を歌っている。二階の奥がカスの部屋だ。",
+      "targets": [
+        {
+          "id": "hilda",
+          "name": "女将ヒルダ",
+          "kind": "npc",
+          "entity": "npc_hilda",
+          "description": "噂好きの女将。客の出入りをよく見ている。"
+        },
+        {
+          "id": "kass_room",
+          "name": "カスの部屋の扉",
+          "kind": "object",
+          "description": "鍵の掛かった古い木の扉。"
+        }
+      ],
+      "exits": [
+        {
+          "to": "market",
+          "label": "広場の市へ戻る"
+        },
+        {
+          "to": "highway_night",
+          "label": "夜の街道へ向かう",
+          "requires": {
+            "clue": "c_meeting"
+          },
+          "lockedText": "街道へ行く理由が、まだない。"
+        }
+      ]
+    },
+    {
+      "id": "highway_night",
+      "name": "夜の街道",
+      "location": "loc_highway",
+      "description": "月明かりの石畳。道端の祠の陰で、カスが震えながら誰かを待っている。やがて、短剣を下げた男たちが二人、闇から現れた。",
+      "targets": [
+        {
+          "id": "kass_night",
+          "name": "カス",
+          "kind": "npc",
+          "entity": "npc_kass",
+          "description": "財布を握りしめて震えている。"
+        },
+        {
+          "id": "bandits",
+          "name": "取り立ての盗賊たち",
+          "kind": "npc",
+          "description": "革鎧の荒くれ者が二人。片方の頬には刀傷がある。"
+        },
+        {
+          "id": "bandit_a",
+          "name": "刀傷の盗賊",
+          "kind": "enemy",
+          "description": "短剣を構えた荒くれ者。"
+        },
+        {
+          "id": "bandit_b",
+          "name": "痩せた盗賊",
+          "kind": "enemy",
+          "description": "棍棒を振り回す男。"
+        }
+      ],
+      "exits": [
+        {
+          "to": "market",
+          "label": "村へ戻る"
+        }
+      ]
+    }
+  ],
+  "clues": [
+    {
+      "id": "c_sick",
+      "text": "霊薬を飲んだ木こりたちは、病ではなく深く眠り込んでいるだけだという。"
+    },
+    {
+      "id": "c_fake",
+      "text": "霊薬の正体は、色をつけた水に眠り草を煮出したものだ。疲れが吹き飛んだように感じるのは、眠気でぼんやりするからにすぎない。"
+    },
+    {
+      "id": "c_nervous",
+      "text": "カスは笑顔の下で怯えている。何度も街道の方を気にしており、売り上げを数える手が震えていた。"
+    },
+    {
+      "id": "c_night_out",
+      "text": "ヒルダによれば、カスは毎晩、宿を抜け出して街道の方へ出かけていく。戻ると決まって青い顔をしているらしい。"
+    },
+    {
+      "id": "c_coerced",
+      "text": "カスは街道の盗賊に借金があり、脅されて偽薬を売らされている。売り上げはすべて取り立てに消えていた。",
+      "fact": "fact_kass_coerced"
+    },
+    {
+      "id": "c_meeting",
+      "text": "盗賊たちは今夜、街道の祠でカスから金を受け取るつもりだ。",
+      "fact": "fact_highway_bandits"
+    }
+  ],
+  "clocks": [
+    {
+      "id": "sales",
+      "name": "偽薬の売れ行き",
+      "max": 6,
+      "onFull": [
+        {
+          "op": "narrate",
+          "text": "屋台の小瓶はほとんど売り切れた。今日一日で、さらに多くの村人が偽薬を手にしてしまった。"
+        },
+        {
+          "op": "set_flag",
+          "id": "sold_out"
+        }
+      ]
+    }
+  ],
+  "enemies": [
+    {
+      "id": "bandit_a",
+      "name": "刀傷の盗賊",
+      "monster": "bandit"
+    },
+    {
+      "id": "bandit_b",
+      "name": "痩せた盗賊",
+      "monster": "bandit"
+    }
+  ],
+  "triggers": [
+    {
+      "id": "t_rolf",
+      "action": "talk",
+      "target": "rolf",
+      "once": true,
+      "text": "「寝込んだ木こりたちは、熱もないし、ただぐっすり眠ってるだけなんです。それがかえって気味が悪くて」ロルフは小声で続けた。「証拠さえあれば、僕が取り押さえます」",
+      "effects": [
+        {
+          "op": "reveal_clue",
+          "id": "c_sick"
+        },
+        {
+          "op": "advance_clock",
+          "id": "sales",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "id": "t_buy",
+      "action": "interact",
+      "target": "elixir_stall",
+      "option": "buy_elixir",
+      "label": "霊薬を一本買う",
+      "once": true,
+      "text": "十ゴールドを払って小瓶を一本受け取った。カスは「お目が高い！」と大げさに笑った。",
+      "effects": [
+        {
+          "op": "gold",
+          "amount": -10
+        },
+        {
+          "op": "give_item",
+          "item": "fake_elixir",
+          "qty": 1
+        },
+        {
+          "op": "advance_clock",
+          "id": "sales",
+          "amount": 1
+        }
+      ],
+      "when": {
+        "goldGte": 10
+      }
+    },
+    {
+      "id": "t_snatch",
+      "action": "attempt",
+      "target": "elixir_stall",
+      "once": true,
+      "gmHint": "小瓶をこっそり一本くすねる・試飲させてもらう・村人から譲ってもらう",
+      "accepts": [
+        {
+          "skill": "stealth",
+          "difficulty": 12
+        },
+        {
+          "skill": "deception",
+          "difficulty": 11
+        },
+        {
+          "skill": "persuasion",
+          "difficulty": 12
+        }
+      ],
+      "onSuccess": [
+        {
+          "op": "give_item",
+          "item": "fake_elixir",
+          "qty": 1
+        }
+      ],
+      "successText": "青い小瓶が一本、あなたの手の中に収まった。",
+      "onFailure": [
+        {
+          "op": "advance_clock",
+          "id": "sales",
+          "amount": 1
+        },
+        {
+          "op": "relation",
+          "npc": "npc_kass",
+          "delta": -5
+        }
+      ],
+      "failureText": "カスがじろりとこちらを見た。「お客さん、お代はちゃんと払ってくださいよ」"
+    },
+    {
+      "id": "t_analyze",
+      "action": "use_item",
+      "item": "fake_elixir",
+      "once": true,
+      "check": {
+        "skill": "medicine",
+        "difficulty": 11
+      },
+      "onSuccess": [
+        {
+          "op": "reveal_clue",
+          "id": "c_fake"
+        }
+      ],
+      "successText": "栓を抜いて匂いを嗅ぎ、一滴舐める。甘い香りの奥に、覚えのある苦み——眠り草だ。中身は色水にすぎない。",
+      "onFailure": [
+        {
+          "op": "advance_clock",
+          "id": "sales",
+          "amount": 1
+        }
+      ],
+      "failureText": "甘い匂いがするが、何が入っているのかは分からない。薬に詳しい者に見せるか、別の方法で調べる必要がある。"
+    },
+    {
+      "id": "t_analyze_arcana",
+      "action": "attempt",
+      "target": "elixir_stall",
+      "when": {
+        "not": {
+          "clue": "c_fake"
+        }
+      },
+      "gmHint": "小瓶の中身を見極める（魔力の有無、色、匂い、沈殿物）",
+      "accepts": [
+        {
+          "skill": "arcana",
+          "difficulty": 11
+        },
+        {
+          "skill": "medicine",
+          "difficulty": 12
+        },
+        {
+          "skill": "perception",
+          "difficulty": 14
+        }
+      ],
+      "onSuccess": [
+        {
+          "op": "reveal_clue",
+          "id": "c_fake"
+        }
+      ],
+      "successText": "小瓶からは魔力のかけらも感じない。瓶の底には、煮出した眠り草の細かな澱が沈んでいる。",
+      "onFailure": [
+        {
+          "op": "advance_clock",
+          "id": "sales",
+          "amount": 1
+        }
+      ],
+      "failureText": "瓶越しでは中身までは分からない。"
+    },
+    {
+      "id": "t_kass_talk",
+      "action": "talk",
+      "target": "kass",
+      "approach": "friendly",
+      "once": true,
+      "text": "「霊薬ですか？　もちろん本物ですとも！　王都の錬金術師から直に仕入れたんです！」カスは早口でまくし立てたが、視線が一瞬、街道の方へ泳いだ。",
+      "effects": [
+        {
+          "op": "advance_clock",
+          "id": "sales",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "id": "t_kass_read",
+      "action": "attempt",
+      "target": "kass",
+      "once": true,
+      "gmHint": "カスの様子を観察する・嘘を見抜く・本音を引き出す",
+      "accepts": [
+        {
+          "skill": "insight",
+          "difficulty": 11
+        },
+        {
+          "skill": "perception",
+          "difficulty": 12
+        }
+      ],
+      "onSuccess": [
+        {
+          "op": "reveal_clue",
+          "id": "c_nervous"
+        }
+      ],
+      "successText": "笑顔の下で、カスは怯えている。何度も街道の方を気にし、売り上げを数える手が震えていた。",
+      "onFailure": [
+        {
+          "op": "advance_clock",
+          "id": "sales",
+          "amount": 1
+        }
+      ],
+      "failureText": "カスの口上は淀みない。本心はうかがえない。"
+    },
+    {
+      "id": "t_kass_confront",
+      "action": "talk",
+      "target": "kass",
+      "approach": "persuade",
+      "when": {
+        "all": [
+          {
+            "clue": "c_fake"
+          },
+          {
+            "not": {
+              "clue": "c_coerced"
+            }
+          }
+        ]
+      },
+      "check": {
+        "skill": "persuasion",
+        "difficulty": 12
+      },
+      "onSuccess": [
+        {
+          "op": "reveal_clue",
+          "id": "c_coerced"
+        },
+        {
+          "op": "reveal_clue",
+          "id": "c_meeting"
+        },
+        {
+          "op": "relation",
+          "npc": "npc_kass",
+          "delta": 10
+        }
+      ],
+      "successText": "人目のない天幕の裏で中身のことを告げると、カスの笑顔が崩れた。「……街道の連中に借金があるんです。偽物を売って稼げと脅されて。今夜も祠で金を渡さなきゃならない……」",
+      "onFailure": [
+        {
+          "op": "relation",
+          "npc": "npc_kass",
+          "delta": -5
+        }
+      ],
+      "failureText": "「言いがかりはやめてください！」カスは声を荒げ、客たちがこちらを振り向いた。"
+    },
+    {
+      "id": "t_kass_press",
+      "action": "talk",
+      "target": "kass",
+      "approach": "intimidate",
+      "when": {
+        "not": {
+          "clue": "c_coerced"
+        }
+      },
+      "once": true,
+      "check": {
+        "skill": "intimidation",
+        "difficulty": 13
+      },
+      "onSuccess": [
+        {
+          "op": "reveal_clue",
+          "id": "c_coerced"
+        },
+        {
+          "op": "reveal_clue",
+          "id": "c_meeting"
+        },
+        {
+          "op": "relation",
+          "npc": "npc_kass",
+          "delta": -10
+        }
+      ],
+      "successText": "胸ぐらを掴むと、カスは真っ青になって白状した。「か、借金があるんです！　街道の連中に脅されて……今夜も祠で金を渡すことに……」",
+      "onFailure": [
+        {
+          "op": "relation",
+          "npc": "npc_kass",
+          "delta": -10
+        },
+        {
+          "op": "advance_clock",
+          "id": "sales",
+          "amount": 1
+        }
+      ],
+      "failureText": "カスは悲鳴を上げて屋台の陰に逃げ込み、村人たちが非難の目を向けてきた。"
+    },
+    {
+      "id": "t_crowd",
+      "action": "talk",
+      "target": "crowd",
+      "once": true,
+      "text": "列に並ぶ木こりの女房が言う。「亭主が飲んだら、そりゃあぐっすり寝ちまってさ。疲れは取れたって言うけど、仕事にならないんだよ」",
+      "effects": [
+        {
+          "op": "reveal_clue",
+          "id": "c_sick"
+        }
+      ]
+    },
+    {
+      "id": "t_hilda",
+      "action": "talk",
+      "target": "hilda",
+      "once": true,
+      "text": "「カスさん？　毎晩こっそり宿を抜け出して、街道の方へ行くのよ。帰ってくると決まって青い顔。何か厄介ごとを抱えてるんじゃないかしら」",
+      "effects": [
+        {
+          "op": "reveal_clue",
+          "id": "c_night_out"
+        }
+      ]
+    },
+    {
+      "id": "t_room",
+      "action": "attempt",
+      "target": "kass_room",
+      "once": true,
+      "gmHint": "カスの部屋に入る（鍵を開ける・ヒルダに合鍵を頼む・窓から入る）",
+      "accepts": [
+        {
+          "skill": "acrobatics",
+          "difficulty": 12
+        },
+        {
+          "skill": "persuasion",
+          "difficulty": 13
+        },
+        {
+          "skill": "deception",
+          "difficulty": 12
+        },
+        {
+          "skill": "athletics",
+          "difficulty": 13
+        }
+      ],
+      "onSuccess": [
+        {
+          "op": "give_item",
+          "item": "debt_letter",
+          "qty": 1
+        },
+        {
+          "op": "reveal_clue",
+          "id": "c_coerced"
+        },
+        {
+          "op": "reveal_clue",
+          "id": "c_meeting"
+        }
+      ],
+      "successText": "部屋の荷物の底に、くしゃくしゃの手紙があった。『期日までに五十ゴールド。払えなければ商売はおしまいだ。今夜、街道の祠で』——借金の督促状だ。",
+      "onFailure": [
+        {
+          "op": "advance_clock",
+          "id": "sales",
+          "amount": 1
+        }
+      ],
+      "failureText": "扉はびくともしない。廊下の向こうで誰かの足音がした。"
+    },
+    {
+      "id": "t_room_tools",
+      "action": "use_item",
+      "item": "thieves_tools",
+      "target": "kass_room",
+      "once": true,
+      "text": "細工道具で古い錠前を開けた。荷物の底から、くしゃくしゃの督促状が見つかる。『期日までに五十ゴールド。今夜、街道の祠で』",
+      "effects": [
+        {
+          "op": "give_item",
+          "item": "debt_letter",
+          "qty": 1
+        },
+        {
+          "op": "reveal_clue",
+          "id": "c_coerced"
+        },
+        {
+          "op": "reveal_clue",
+          "id": "c_meeting"
+        }
+      ]
+    },
+    {
+      "id": "t_expose",
+      "action": "attempt",
+      "target": "crowd",
+      "once": true,
+      "when": {
+        "clue": "c_fake"
+      },
+      "gmHint": "村人の前で偽薬だと暴く（証拠を見せる、演説する、カスに自白させる）",
+      "accepts": [
+        {
+          "skill": "persuasion",
+          "difficulty": 11
+        },
+        {
+          "skill": "intimidation",
+          "difficulty": 12
+        },
+        {
+          "skill": "deception",
+          "difficulty": 14
+        }
+      ],
+      "onSuccess": [
+        {
+          "op": "set_flag",
+          "id": "kass_exposed"
+        }
+      ],
+      "successText": "眠り草の澱が沈んだ小瓶を掲げて真相を告げると、広場はどよめいた。カスは屋台を放り出して逃げ出した。",
+      "onFailure": [
+        {
+          "op": "relation",
+          "npc": "npc_kass",
+          "delta": -5
+        }
+      ],
+      "failureText": "村人たちは半信半疑だ。もっとはっきりした証拠か、言い方が要る。"
+    },
+    {
+      "id": "t_report",
+      "action": "interact",
+      "target": "rolf",
+      "option": "report",
+      "label": "ロルフに証拠を渡し、カスを捕らえさせる",
+      "when": {
+        "clue": "c_fake"
+      },
+      "once": true,
+      "text": "証拠を受け取ったロルフは大きく頷き、屋台へ向かった。「行商人カス、偽薬販売の疑いで拘束する！」",
+      "effects": [
+        {
+          "op": "set_flag",
+          "id": "kass_arrested"
+        }
+      ]
+    },
+    {
+      "id": "t_promise_help",
+      "action": "interact",
+      "target": "kass",
+      "option": "offer_help",
+      "label": "盗賊の件を片付けるから、代金を村人に返すよう約束させる",
+      "when": {
+        "clue": "c_coerced"
+      },
+      "once": true,
+      "text": "「ほ、本当に……？」カスは帽子を握りしめた。「もし奴らを追い払ってくれるなら、売り上げは全部返します。誓います」",
+      "effects": [
+        {
+          "op": "set_flag",
+          "id": "kass_trusts"
+        },
+        {
+          "op": "relation",
+          "npc": "npc_kass",
+          "delta": 10
+        }
+      ]
+    },
+    {
+      "id": "t_bandits_talk",
+      "action": "attempt",
+      "target": "bandits",
+      "once": true,
+      "gmHint": "盗賊を追い払う（衛兵が来ると脅す、取引を持ちかける、こちらの腕を見せつける、ロルフを呼んである振りをする）",
+      "accepts": [
+        {
+          "skill": "intimidation",
+          "difficulty": 12
+        },
+        {
+          "skill": "deception",
+          "difficulty": 12
+        },
+        {
+          "skill": "persuasion",
+          "difficulty": 14
+        }
+      ],
+      "onSuccess": [
+        {
+          "op": "set_flag",
+          "id": "bandits_gone"
+        }
+      ],
+      "successText": "盗賊たちは顔を見合わせ、舌打ちを残して闇に消えた。「……覚えてろよ」",
+      "onFailure": [
+        {
+          "op": "start_combat",
+          "enemies": [
+            "bandit_a",
+            "bandit_b"
+          ]
+        }
+      ],
+      "failureText": "「面白え、やってみな」刀傷の男が短剣を抜いた！"
+    },
+    {
+      "id": "t_bandits_fight",
+      "action": "interact",
+      "target": "bandits",
+      "option": "fight",
+      "label": "盗賊に斬りかかる",
+      "text": "あなたは盗賊たちの前に躍り出た！",
+      "effects": [
+        {
+          "op": "start_combat",
+          "enemies": [
+            "bandit_a",
+            "bandit_b"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "t_letter_bandits",
+      "action": "use_item",
+      "item": "debt_letter",
+      "target": "bandits",
+      "once": true,
+      "check": {
+        "skill": "intimidation",
+        "difficulty": 10
+      },
+      "onSuccess": [
+        {
+          "op": "set_flag",
+          "id": "bandits_gone"
+        }
+      ],
+      "successText": "督促状を突きつける。「これを衛兵に渡せば、恐喝の動かぬ証拠だ」盗賊たちは青ざめ、手紙を奪い返そうともせずに逃げていった。",
+      "onFailure": [
+        {
+          "op": "start_combat",
+          "enemies": [
+            "bandit_a",
+            "bandit_b"
+          ]
+        }
+      ],
+      "failureText": "「なら口を塞ぐまでだ」盗賊たちが襲いかかってきた！"
+    },
+    {
+      "id": "t_redeem",
+      "action": "talk",
+      "target": "kass_night",
+      "when": {
+        "any": [
+          {
+            "flag": "bandits_gone"
+          },
+          {
+            "all": [
+              {
+                "defeated": "bandit_a"
+              },
+              {
+                "defeated": "bandit_b"
+              }
+            ]
+          }
+        ]
+      },
+      "once": true,
+      "text": "カスはへなへなと座り込み、やがて泣き笑いの顔で言った。「……明日、代金は全部返します。それから、まっとうな薬を仕入れ直しますよ。本物をね」",
+      "effects": [
+        {
+          "op": "set_flag",
+          "id": "kass_redeemed"
+        }
+      ]
+    },
+    {
+      "id": "t_redeem_attempt",
+      "action": "attempt",
+      "target": "kass_night",
+      "when": {
+        "any": [
+          {
+            "flag": "bandits_gone"
+          },
+          {
+            "all": [
+              {
+                "defeated": "bandit_a"
+              },
+              {
+                "defeated": "bandit_b"
+              }
+            ]
+          }
+        ]
+      },
+      "once": true,
+      "gmHint": "カスに償いをさせる・励ます・説教する",
+      "accepts": [
+        {
+          "skill": "persuasion",
+          "difficulty": 8
+        },
+        {
+          "skill": "insight",
+          "difficulty": 8
+        },
+        {
+          "skill": "intimidation",
+          "difficulty": 8
+        }
+      ],
+      "onSuccess": [
+        {
+          "op": "set_flag",
+          "id": "kass_redeemed"
+        }
+      ],
+      "successText": "カスは何度も頷いた。「代金は全部返します。もう二度と、こんな商売はしません」",
+      "onFailure": [
+        {
+          "op": "narrate",
+          "text": "カスはまだ震えていて、言葉が耳に入らないようだ。"
+        }
+      ],
+      "failureText": "もう少し落ち着かせる必要がある。"
+    }
+  ],
+  "hints": [
+    {
+      "id": "h_rolf",
+      "text": "ロルフがこちらに目配せしている。何か話したいことがあるようだ。",
+      "when": {
+        "node": "market"
+      },
+      "until": {
+        "clue": "c_sick"
+      }
+    },
+    {
+      "id": "h_bottle",
+      "text": "列の先頭の村人が受け取った小瓶の底に、何か沈んでいるのがちらりと見えた。",
+      "when": {
+        "node": "market"
+      },
+      "until": {
+        "clue": "c_fake"
+      }
+    },
+    {
+      "id": "h_glance",
+      "text": "客をさばきながら、カスは何度も街道の方角を盗み見ている。",
+      "when": {
+        "clue": "c_fake"
+      },
+      "until": {
+        "clue": "c_coerced"
+      }
+    },
+    {
+      "id": "h_inn",
+      "text": "ヒルダが「カスさん、ゆうべも遅かったのよ」と誰かに話している声が聞こえた。",
+      "when": {
+        "node": "inn"
+      },
+      "until": {
+        "any": [
+          {
+            "clue": "c_night_out"
+          },
+          {
+            "clue": "c_coerced"
+          }
+        ]
+      }
+    },
+    {
+      "id": "h_choice",
+      "text": "カスは脅されて偽薬を売っていた。彼を裁くのか、救うのか、それとも元凶を断つのか。",
+      "when": {
+        "clue": "c_coerced"
+      },
+      "until": {
+        "any": [
+          {
+            "flag": "kass_exposed"
+          },
+          {
+            "flag": "kass_redeemed"
+          },
+          {
+            "flag": "kass_arrested"
+          }
+        ]
+      }
+    }
+  ],
+  "resolutions": [
+    {
+      "id": "r_redeemed",
+      "when": {
+        "flag": "kass_redeemed"
+      },
+      "outcome": "success",
+      "title": "やり直しの行商人",
+      "epilogue": "翌朝、カスは広場で頭を下げ、偽薬の代金を一人ひとりに返して回った。盗賊の一味は街道から姿を消した。村人の中には彼を許さない者もいるが、少なくとも今、彼の屋台に並ぶのは本物の薬だ。",
+      "rewards": {
+        "xp": 60,
+        "gold": 25,
+        "items": []
+      },
+      "worldEffects": [
+        {
+          "op": "set_fact",
+          "fact": "fact_kass_redeemed"
+        },
+        {
+          "op": "set_fact",
+          "fact": "fact_highway_bandits_driven"
+        }
+      ]
+    },
+    {
+      "id": "r_arrested",
+      "when": {
+        "flag": "kass_arrested"
+      },
+      "outcome": "success",
+      "title": "衛兵の手柄",
+      "epilogue": "カスは衛兵ロルフに捕らえられ、王都の裁きを待つことになった。偽薬騒ぎは収まった。だが、カスを脅していた者たちのことは、まだ誰も知らない。",
+      "rewards": {
+        "xp": 45,
+        "gold": 20,
+        "items": []
+      },
+      "worldEffects": [
+        {
+          "op": "set_fact",
+          "fact": "fact_kass_arrested"
+        }
+      ]
+    },
+    {
+      "id": "r_exposed",
+      "when": {
+        "flag": "kass_exposed"
+      },
+      "outcome": "success",
+      "title": "暴かれた霊薬",
+      "epilogue": "偽薬の正体は村中に知れ渡り、カスは屋台を捨てて村から逃げ出した。木こりたちは数日で目を覚ました。街道の方では、取り立て損ねた誰かが舌打ちしているかもしれない。",
+      "rewards": {
+        "xp": 45,
+        "gold": 15,
+        "items": []
+      },
+      "worldEffects": [
+        {
+          "op": "set_fact",
+          "fact": "fact_kass_exposed"
+        }
+      ]
+    },
+    {
+      "id": "r_withdraw",
+      "when": {
+        "flag": "withdrawn"
+      },
+      "outcome": "withdrawn",
+      "title": "関わらないことにした",
+      "epilogue": "あなたは市を後にした。カスの屋台には、今日も青い小瓶が並んでいる。",
+      "rewards": {
+        "xp": 5,
+        "gold": 0,
+        "items": []
+      }
+    },
+    {
+      "id": "r_timeout",
+      "when": {
+        "flag": "timeout"
+      },
+      "outcome": "partial",
+      "title": "店じまい",
+      "epilogue": "市は終わり、カスは次の村へ発った。真相は分からずじまいだったが、あなたが集めた話はロルフの手帳に書き留められた。",
+      "rewards": {
+        "xp": 15,
+        "gold": 0,
+        "items": []
+      }
+    },
+    {
+      "id": "r_down",
+      "when": {
+        "flag": "down"
+      },
+      "outcome": "failure",
+      "title": "街道の闇",
+      "epilogue": "盗賊の一撃に倒れたあなたを、騒ぎを聞きつけたロルフが村まで運んでくれた。カスの行方は分からない。",
+      "rewards": {
+        "xp": 10,
+        "gold": 0,
+        "items": []
+      }
+    },
+    {
+      "id": "r_dep_lost",
+      "when": {
+        "flag": "dependency_lost"
+      },
+      "outcome": "partial",
+      "title": "消えた行商人",
+      "epilogue": "事情が変わり、偽薬騒ぎの真相を追う手立てはなくなった。",
+      "rewards": {
+        "xp": 15,
+        "gold": 5,
+        "items": []
+      }
+    }
+  ],
+  "fallbackPolicy": [
+    {
+      "when": "turn_limit",
+      "mode": "conclude",
+      "resolution": "r_timeout"
+    },
+    {
+      "when": "character_down",
+      "mode": "conclude",
+      "resolution": "r_down"
+    },
+    {
+      "when": "dependency_lost",
+      "mode": "conclude",
+      "resolution": "r_dep_lost",
+      "followup": "daily_request"
+    }
+  ],
+  "impactLimits": {
+    "maxXp": 60,
+    "maxGold": 25
+  }
+}

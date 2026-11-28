@@ -63,3 +63,56 @@ describe("world consequences across players", () => {
     expect(ld.unavailable_reason).toContain("関係者が不在");
   });
 });
+
+describe("glowing_well", () => {
+  it("can be solved without dice via the chapel records and the night watchman", () => {
+    const { kernel } = makeKernel();
+    const acc = newPlayer(kernel);
+    const chr = newCharacter(kernel, acc, "mage");
+    const s = session(kernel, acc, chr, "glowing_well");
+    s.go("move", { to: "chapel" });
+    s.go("talk", { target_id: "alan" });
+    const rec = s.go("investigate", { target_id: "records" });
+    expect(rec.changes.items.seal_prayer).toBe(1);
+    s.go("move", { to: "square_night" });
+    s.go("talk", { target_id: "rolf_night" });
+    s.go("move", { to: "well_bottom" });
+    const end = s.go("use_item", { item_id: "seal_prayer", target_id: "seal_stone" });
+    expect(end.conclusion.title).toBe("結び直された封印");
+    expect(end.result.checks).toHaveLength(0);
+  });
+});
+
+describe("lying_merchant", () => {
+  it("the thief route (pick the lock, confront the bandits, redeem Kass) is reachable", () => {
+    const titles = new Set<string>();
+    for (let seed = 1; seed <= 15; seed++) {
+      const { kernel } = makeKernel({ seed: () => `merchant-${seed}` });
+      const acc = newPlayer(kernel);
+      const chr = newCharacter(kernel, acc, "thief");
+      const s = session(kernel, acc, chr, "lying_merchant");
+      s.go("move", { to: "inn" });
+      const room = s.go("use_item", { item_id: "thieves_tools", target_id: "kass_room" });
+      expect(room.revealed_clues.map((c: any) => c.id)).toContain("c_coerced");
+      s.go("move", { to: "highway_night" });
+      let r = s.go("use_item", { item_id: "debt_letter", target_id: "bandits" });
+      for (let i = 0; i < 15 && r.combat.active && !r.progress.episode_complete; i++) r = s.go("attack", { target_id: r.combat.enemies[0].id });
+      if (!r.progress.episode_complete) r = s.go("talk", { target_id: "kass_night" });
+      titles.add(r.conclusion?.title);
+    }
+    expect(titles).toContain("やり直しの行商人");
+  });
+});
+
+describe("resource conditions", () => {
+  it("cannot buy the elixir without enough gold", () => {
+    const { kernel, sql } = makeKernel();
+    const acc = newPlayer(kernel);
+    const chr = newCharacter(kernel, acc, "thief");
+    sql.run("UPDATE components SET value = '{\"gold\":3}' WHERE entity_id = ? AND component_type = 'wallet'", chr);
+    const s = session(kernel, acc, chr, "lying_merchant");
+    expect(() => s.go("interact", { target_id: "elixir_stall", option_id: "buy_elixir" })).toThrow();
+    const a = kernel.call(acc, "get_actions", { episode_id: s.ep }) as any;
+    expect(a.affordances.some((x: any) => x.option_id === "buy_elixir")).toBe(false);
+  });
+});

@@ -34,7 +34,7 @@
 
 ### 条件（Cond）
 
-`{flag}` `{clue}` `{node}` `{clock, gte}` `{defeated}` `{hasItem}` `{turnGte}` `{combat}` `{not}` `{all}` `{any}`。
+`{flag}` `{clue}` `{node}` `{clock, gte}` `{defeated}` `{hasItem}` `{goldGte}` `{turnGte}` `{combat}` `{not}` `{all}` `{any}`。
 `light` フラグは Kernel が設定する（灯火の呪文、松明・ランタン）。
 
 ### 効果（Effect）

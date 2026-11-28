@@ -1947,6 +1947,7 @@ export class Kernel {
     return {
       turn: () => turn,
       hasItem: (item) => (c.items[item] ?? 0) > 0,
+      gold: () => c.gold,
       spawnEnemy: (enemyId) => {
         const m = this.enemyDef(s, enemyId);
         const hp = m?.hp ?? 5;
@@ -1986,7 +1987,7 @@ export class Kernel {
   }
 
   private readHost(c: CharacterSheet, turn: number) {
-    return { turn: () => turn, hasItem: (item: string) => (c.items[item] ?? 0) > 0 };
+    return { turn: () => turn, hasItem: (item: string) => (c.items[item] ?? 0) > 0, gold: () => c.gold };
   }
 
   private emit(e: {
